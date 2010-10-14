@@ -1,0 +1,17 @@
+libglm_la-glmimg_devil.lo libglm_la-glmimg_devil.o: glmimg_devil.c \
+  ../config.h glm.h \
+  /System/Library/Frameworks/OpenGL.framework/Headers/gl.h \
+  /System/Library/Frameworks/OpenGL.framework/Headers/glext.h \
+  /System/Library/Frameworks/OpenGL.framework/Headers/glu.h glmint.h
+
+../config.h:
+
+glm.h:
+
+/System/Library/Frameworks/OpenGL.framework/Headers/gl.h:
+
+/System/Library/Frameworks/OpenGL.framework/Headers/glext.h:
+
+/System/Library/Frameworks/OpenGL.framework/Headers/glu.h:
+
+glmint.h:
