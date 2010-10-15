@@ -26,14 +26,15 @@ cameraStart = (x+4*z+2*y, origin, yAxis)
 resources = zLoadObject 0 "resources/patrol.obj"
 simpleScene = ZSceneRoot Nothing cameraStart ships
 
-ships = ZGroupNode [ ZXFormNode (ZTranslate $ xAxis+yAxis)
-                                    (ZObjectNode 0)
-                   , ZXFormNode (ZTranslate $ origin - xAxis - yAxis)
-                                    (ZObjectNode 0)
-                   , ZXFormNode (ZTranslate $ origin - 3*xAxis - 3*yAxis)
-                                    (ZObjectNode 0)
-                   , ZLiteral drawAxes
-                   ]
+ships = ZGroupNode [
+         ZXFormNode (ZTranslate $ xAxis+yAxis)
+                        (ZObjectNode 0)
+        , ZXFormNode (ZTranslate $ origin - xAxis - yAxis)
+                         (ZObjectNode 0)
+        , ZXFormNode (ZTranslate $ origin - 3*xAxis - 3*yAxis)
+                         (ZObjectNode 0)
+        , ZLiteral drawAxes
+        ]
 
 newtype KeyVector = KV Integer
 
@@ -41,7 +42,7 @@ data GameState = GameState {
       stGraphics    :: ZGraphicsGL ZSceneRoot
     , stLastMouse   :: (Int, Int)
     , stPressedKeys :: KeyVector
-      }
+    }
                  
 main = do graphics <- zInitialize "Simple Test" 800 600 simpleScene resources
           let gs = GameState { stGraphics = graphics

@@ -13,6 +13,9 @@ type ZHandlerFunc a st = a -> ZGameLoop st
 instance Monoid (ZGameLoop st) where
   mempty = return ()
   mappend = (>>)
+  
+zGameLoopStep :: st -> ZGameLoop st -> IO st
+zGameLoopStep st loop = execStateT loop st
 
 zWithEventChannel :: ZChannel [ZEvent] -> ZEventHandler st -> ZGameLoop st
 zWithEventChannel events hs =
@@ -29,6 +32,7 @@ zWithEventChannel events hs =
           zMouseDown hs (b, (fromIntegral x, fromIntegral y))
       applyHandlers (MouseMove (x,y)) =
           zMouseMove hs (fromIntegral x, fromIntegral y)
+      applyHandlers (Tic t) = zTic hs t
                                   
 data ZEventHandler st = ZEventHandler {
       zKeyPress   :: ZHandlerFunc Char st
@@ -36,17 +40,19 @@ data ZEventHandler st = ZEventHandler {
     , zMouseDown  :: ZHandlerFunc (Button, (Int, Int)) st
     , zMouseUp    :: ZHandlerFunc Button st
     , zMouseMove  :: ZHandlerFunc (Int, Int) st
+    , zTic        :: ZHandlerFunc Int st
     }
                         
 zIgnoreEvent :: ZHandlerFunc a st                     
 zIgnoreEvent = mempty
                         
 zEmptyHandler = ZEventHandler {
-                 zKeyPress = zIgnoreEvent
-               , zKeyRelease = zIgnoreEvent
-               , zMouseDown = zIgnoreEvent
-               , zMouseUp = zIgnoreEvent
-               , zMouseMove = zIgnoreEvent
+                  zKeyPress = zIgnoreEvent
+                , zKeyRelease = zIgnoreEvent
+                , zMouseDown = zIgnoreEvent
+                , zMouseUp = zIgnoreEvent
+                , zMouseMove = zIgnoreEvent
+                , zTic = zIgnoreEvent
                }
 
 bothAppend :: Monoid m => (a -> m) -> a -> a -> m
@@ -54,10 +60,11 @@ bothAppend f r1 r2 = f r1 `mappend` f r2
 
 (>+<) :: ZEventHandler st -> ZEventHandler st -> ZEventHandler st
 eh1 >+< eh2 = ZEventHandler {
-        zKeyPress = combine zKeyPress
-      , zKeyRelease = combine zKeyRelease
-      , zMouseDown = combine zMouseDown
-      , zMouseUp = combine zMouseUp
-      , zMouseMove = combine zMouseMove
-      }
+                zKeyPress = combine zKeyPress
+              , zKeyRelease = combine zKeyRelease
+              , zMouseDown = combine zMouseDown
+              , zMouseUp = combine zMouseUp
+              , zMouseMove = combine zMouseMove
+              , zTic = combine zTic
+              }
     where combine h = h eh1 `mappend` h eh2

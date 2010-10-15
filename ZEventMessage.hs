@@ -9,3 +9,4 @@ data ZEvent = KeyPress Char
             | MouseDown Button (GLint, GLint)
             | MouseUp Button
             | MouseMove (GLint, GLint)
+            | Tic Int -- Eventually this will be unit of time that has passed

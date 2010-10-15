@@ -23,7 +23,7 @@ zEmptyResourceList = GraphicsResources {
                        gDisplayLists = empty
                      }
                      
-zUpdateGraphics = yield                     
+zUpdateGraphics = postRedisplay Nothing >> yield                     
 -- I'll add exception handling one day --
 zLoadObject :: Int -> String -> ZResourceLoader
 zLoadObject id str = do
@@ -57,10 +57,12 @@ zInitialize :: ZRenderGL scene =>
                GLsizei ->
                scene ->
                ZResourceLoader ->
+               Int ->
                IO (ZGraphicsGL scene)
-zInitialize name width height scene loader =
+zInitialize name width height scene loader period =
     do sceneVar <- zNewChan scene
        eventVar <- zNewChan []
+       tickgen eventVar period
        threadId <- forkIO $ startGL loader sceneVar eventVar
        return $ GraphicsGL {
                     gProgname = name
@@ -71,6 +73,8 @@ zInitialize name width height scene loader =
                   , gEventChannel = eventVar
                }
         where
+          tickgen eChan p =
+              addTimerCallback p $ sendEvent (Tic p) eChan >> tickgen eChan p
           display res sceneChan = do
             scene <- zPeekChan sceneChan
             clear [ ColorBuffer, DepthBuffer ]
@@ -87,14 +91,13 @@ zInitialize name width height scene loader =
             displayCallback $= display res sceneVar
             motionCallback  $= Just (mouseCallback eventVar)
             keyboardMouseCallback $= Just (buttonCallback eventVar)
-            idleCallback $= Just (display res sceneVar)
             --- Other stuff now ---
             matrixMode $= Projection
             loadIdentity
             perspective 45 
                         (fromIntegral width / fromIntegral height)
                         0.1
-                        100
+                        50
             matrixMode $= Modelview 0
             depthFunc $= Just Less
             hint PointSmooth $= Nicest
