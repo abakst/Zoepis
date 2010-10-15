@@ -16,7 +16,7 @@ glmMATERIAL = 16
 newtype ZObject = ZObject DisplayList
 
 foreign import ccall unsafe "glmReadOBJ" glmReadOBJ :: CString -> IO (Ptr a)
-foreign import ccall unsafe "glmList" glmList :: Ptr a -> GLuint -> IO (GLuint)
+foreign import ccall unsafe "glmList" glmList :: Ptr a -> GLuint -> IO GLuint
 foreign import ccall unsafe "glmDraw" glmDraw :: Ptr a -> GLuint -> IO ()
 foreign import ccall unsafe "glmUnitize" glmUnitize :: Ptr a -> IO GLfloat
 

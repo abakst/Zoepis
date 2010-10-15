@@ -64,14 +64,14 @@ zInitialize name width height scene loader period =
        eventVar <- zNewChan []
        tickgen eventVar period
        threadId <- forkIO $ startGL loader sceneVar eventVar
-       return $ GraphicsGL {
+       return GraphicsGL {
                     gProgname = name
                   , gWidth = width
                   , gHeight = height
                   , gThreadId = threadId
                   , gSceneChannel = sceneVar
                   , gEventChannel = eventVar
-               }
+                  }
         where
           tickgen eChan p =
               addTimerCallback p $ sendEvent (Tic p) eChan >> tickgen eChan p
@@ -119,8 +119,7 @@ setupLights = do
   position (Light 1)    $= Vertex4 (-1.0) 2 (-1.0) (1::GLfloat)                
   
 sendEvent :: ZEvent -> ZChannel [ZEvent] -> IO ()  
-sendEvent e chan = do 
-  zModifyChan_ chan (\es -> return $ (e:es))
+sendEvent e chan = zModifyChan_ chan (\es -> return (e:es))
 
 mouseCallback :: ZChannel [ZEvent] -> MotionCallback
 mouseCallback chan (Position x y) = let e = MouseMove (x, y)

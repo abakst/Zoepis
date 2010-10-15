@@ -29,7 +29,7 @@ data ZTransform = ZScale GLfloat GLfloat GLfloat
                 | ZTranslate (Vector3D GLfloat)
                       
 class IsoVecTo a where    
-    fromVec3D :: (Vector3D f) -> (a f)
+    fromVec3D :: Vector3D f -> a f
     
 instance IsoVecTo Vector3 where
     fromVec3D v = Vector3 (vecX v) (vecY v) (vecZ v)
@@ -53,4 +53,4 @@ instance ZRenderGL ZSceneTree where
           where
             applyTransform (ZScale x y z) = scale x y z
             applyTransform (ZRotate v angle) = rotate angle (fromVec3D v)
-            applyTransform (ZTranslate v) = translate $ (fromVec3D v)
+            applyTransform (ZTranslate v) = translate $ fromVec3D v
