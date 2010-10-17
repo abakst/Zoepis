@@ -1,9 +1,15 @@
 # Makefile for thing.
 
-simpletest:
-	ghc --make -lglm simple_test.hs -o simple_test
+HC=ghc
+HCFLAG=--make
+HLFLAG=-lglm
+DO=$(HC) $(HCFLAG) $(HLFLAG)
 
-basictest:
-	ghc --make -lglm basic_test.hs -o basic_test
+simple_test:
+	$(DO) simple_test.hs -o simple_test
+
+basic_test:
+	$(DO) basic_test.hs -o basic_test
+
 clean:
 	rm -f *.hi *.o *~ simple_test basic_test

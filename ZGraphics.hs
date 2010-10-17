@@ -62,7 +62,6 @@ zInitialize :: ZRenderGL scene =>
 zInitialize name width height scene loader period =
     do sceneVar <- zNewChan scene
        eventVar <- zNewChan []
-       tickgen eventVar period
        threadId <- forkIO $ startGL loader sceneVar eventVar
        return GraphicsGL {
                     gProgname = name
@@ -73,8 +72,6 @@ zInitialize name width height scene loader period =
                   , gEventChannel = eventVar
                   }
         where
-          tickgen eChan p =
-              addTimerCallback p $ sendEvent (Tic p) eChan >> tickgen eChan p
           display res sceneChan = do
             scene <- zPeekChan sceneChan
             clear [ ColorBuffer, DepthBuffer ]

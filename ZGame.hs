@@ -22,8 +22,8 @@ zWithEventChannel events hs =
     do maybeEs <- lift $ zTryTakeChan events
        case maybeEs of
          (Just es) -> do lift $ zPutChan events []
-                         mapM_ applyHandlers (reverse es)
-         _ -> lift yield
+                         mapM_ applyHandlers es
+--         _ -> lift yield
     where
       applyHandlers (KeyPress x) = zKeyPress hs x
       applyHandlers (KeyRelease x) = zKeyRelease hs x
