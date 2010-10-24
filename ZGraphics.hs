@@ -1,7 +1,6 @@
 module ZGraphics where
 
-import Control.Concurrent (ThreadId, forkIO, yield)
---import Control.Concurrent.MVar    
+import Control.Concurrent (ThreadId, forkIO, forkOS, yield)
 import Graphics.Rendering.OpenGL hiding (get)
 import Graphics.UI.GLUT hiding (get, LeftButton)
 import Data.Map
@@ -22,8 +21,10 @@ type ZResourceLoader = StateT ZGraphicsResources IO ()
 zEmptyResourceList = GraphicsResources {
                        gDisplayLists = empty
                      }
-                     
-zUpdateGraphics = postRedisplay Nothing >> yield                     
+
+zUpdateGraphics :: IO ()
+zUpdateGraphics = postRedisplay Nothing >> yield
+                  
 -- I'll add exception handling one day --
 zLoadObject :: Int -> String -> ZResourceLoader
 zLoadObject id str = do
@@ -57,9 +58,8 @@ zInitialize :: ZRenderGL scene =>
                GLsizei ->
                scene ->
                ZResourceLoader ->
-               Int ->
                IO (ZGraphicsGL scene)
-zInitialize name width height scene loader period =
+zInitialize name width height scene loader =
     do sceneVar <- zNewChan scene
        eventVar <- zNewChan []
        threadId <- forkIO $ startGL loader sceneVar eventVar
@@ -78,6 +78,7 @@ zInitialize name width height scene loader period =
             loadIdentity
             zRenderGL res scene
             flush
+            yield
           startGL resloader sceneVar eventVar = do
             --- Basic init ---
             initialize name []
@@ -105,7 +106,7 @@ zInitialize name width height scene loader period =
             normalize $= Enabled
             setupLights
             mainLoop
-                
+
 setupLights = do 
   lighting              $= Enabled
   light (Light 0)       $= Enabled
@@ -116,7 +117,7 @@ setupLights = do
   position (Light 1)    $= Vertex4 (-1.0) 2 (-1.0) (1::GLfloat)                
   
 sendEvent :: ZEvent -> ZChannel [ZEvent] -> IO ()  
-sendEvent e chan = zModifyChan_ chan (\es -> return (e:es))
+sendEvent e chan = zModifyChan_ chan (\es -> return (e:es)) >> yield
 
 mouseCallback :: ZChannel [ZEvent] -> MotionCallback
 mouseCallback chan (Position x y) = let e = MouseMove (x, y)

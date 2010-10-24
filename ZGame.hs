@@ -15,7 +15,7 @@ instance Monoid (ZGameLoop st) where
   mappend = (>>)
   
 zGameLoopStep :: st -> ZGameLoop st -> IO st
-zGameLoopStep st loop = execStateT loop st
+zGameLoopStep st loop = st `seq` execStateT loop st
 
 zWithEventChannel :: ZChannel [ZEvent] -> ZEventHandler st -> ZGameLoop st
 zWithEventChannel events hs =
@@ -23,7 +23,7 @@ zWithEventChannel events hs =
        case maybeEs of
          (Just es) -> do lift $ zPutChan events []
                          mapM_ applyHandlers es
---         _ -> lift yield
+         _ -> return ()
     where
       applyHandlers (KeyPress x) = zKeyPress hs x
       applyHandlers (KeyRelease x) = zKeyRelease hs x
