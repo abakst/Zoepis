@@ -1,23 +1,32 @@
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 module ZGame where
+
+import ZChannel
+import ZEventMessage
 
 import Data.Monoid
 import Control.Monad.State
 import Control.Concurrent (yield)
-import ZChannel
-import ZEventMessage
+import System.CPUTime
 
-type ZGameLoop st = StateT st IO ()
-type ZHandlerFunc a st = a -> ZGameLoop st
+-- Time --
 
-instance Monoid (ZGameLoop st) where
+zTickPrec = 100000000
+zGetTime  = getCPUTime >>= (return . (`div` zTickPrec))
+    
+-- Game Loop stuff --
+
+type ZGameLoop st a = StateT st IO a
+type ZHandlerFunc a st = a -> ZGameLoop st ()
+
+instance Monoid (ZGameLoop st ()) where
   mempty = return ()
   mappend = (>>)
   
-zGameLoopStep :: st -> ZGameLoop st -> IO st
+zGameLoopStep :: st -> ZGameLoop st () -> IO st
 zGameLoopStep st loop = st `seq` execStateT loop st
 
-zWithEventChannel :: ZChannel [ZEvent] -> ZEventHandler st -> ZGameLoop st
+zWithEventChannel :: ZChannel [ZEvent] -> ZEventHandler st -> ZGameLoop st ()
 zWithEventChannel events hs =
     do maybeEs <- lift $ zTryTakeChan events
        case maybeEs of

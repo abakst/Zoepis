@@ -82,13 +82,13 @@ AR="ar"
 AR_FLAGS="cru"
 
 # A C compiler.
-LTCC="gcc"
+LTCC="gcc -arch i386"
 
 # LTCC compiler flags.
 LTCFLAGS="-g -O2"
 
 # A language-specific compiler.
-CC="gcc"
+CC="gcc -arch i386"
 
 # Is the compiler the GNU C compiler?
 with_gcc=yes
@@ -325,7 +325,7 @@ variables_saved_for_relink="PATH DYLD_LIBRARY_PATH  GCC_EXEC_PREFIX COMPILER_PAT
 link_all_deplibs=yes
 
 # Compile-time system search path for libraries
-sys_lib_search_path_spec=`echo " /lib/i686-apple-darwin10/4.2.1/x86_64/ /lib/x86_64/ /usr/lib/i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../x86_64/ /lib/i686-apple-darwin10/4.2.1/ /lib/ /usr/lib/i686-apple-darwin10/4.2.1/ /usr/lib/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../  /lib /usr/lib /usr/local/lib" | $SED -e "s@${gcc_dir}@\${gcc_dir}@g;s@${gcc_ver}@\${gcc_ver}@g"`
+sys_lib_search_path_spec=`echo " /lib/i686-apple-darwin10/4.2.1/ /lib/ /usr/lib/i686-apple-darwin10/4.2.1/ /usr/lib/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../  /lib /usr/lib /usr/local/lib" | $SED -e "s@${gcc_dir}@\${gcc_dir}@g;s@${gcc_ver}@\${gcc_ver}@g"`
 
 # Run-time system search path for libraries
 sys_lib_dlsearch_path_spec="/usr/local/lib /lib /usr/lib"
@@ -7301,13 +7301,13 @@ AR="ar"
 AR_FLAGS="cru"
 
 # A C compiler.
-LTCC="gcc"
+LTCC="gcc -arch i386"
 
 # LTCC compiler flags.
 LTCFLAGS="-g -O2"
 
 # A language-specific compiler.
-CC="g++"
+CC="g++ -arch i386"
 
 # Is the compiler the GNU C compiler?
 with_gcc=yes
@@ -7544,7 +7544,7 @@ variables_saved_for_relink="PATH DYLD_LIBRARY_PATH  GCC_EXEC_PREFIX COMPILER_PAT
 link_all_deplibs=yes
 
 # Compile-time system search path for libraries
-sys_lib_search_path_spec=`echo " /lib/i686-apple-darwin10/4.2.1/x86_64/ /lib/x86_64/ /usr/lib/i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../i686-apple-darwin10/4.2.1/x86_64/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../x86_64/ /lib/i686-apple-darwin10/4.2.1/ /lib/ /usr/lib/i686-apple-darwin10/4.2.1/ /usr/lib/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../  /lib /usr/lib /usr/local/lib" | $SED -e "s@${gcc_dir}@\${gcc_dir}@g;s@${gcc_ver}@\${gcc_ver}@g"`
+sys_lib_search_path_spec=`echo " /lib/i686-apple-darwin10/4.2.1/ /lib/ /usr/lib/i686-apple-darwin10/4.2.1/ /usr/lib/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../../i686-apple-darwin10/lib/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../i686-apple-darwin10/4.2.1/ /usr/lib/gcc/i686-apple-darwin10/4.2.1/../../../  /lib /usr/lib /usr/local/lib" | $SED -e "s@${gcc_dir}@\${gcc_dir}@g;s@${gcc_ver}@\${gcc_ver}@g"`
 
 # Run-time system search path for libraries
 sys_lib_dlsearch_path_spec="/usr/local/lib /lib /usr/lib"

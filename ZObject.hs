@@ -1,6 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module ZObject(ZObject(ZObject), zLoadObjectFile) where
 
+import Control.Monad
 import Control.Applicative
 import Graphics.Rendering.OpenGL
 import Foreign hiding (rotate)
@@ -15,14 +16,14 @@ glmMATERIAL = 16
 
 newtype ZObject = ZObject DisplayList
 
-foreign import ccall unsafe "glmReadOBJ" glmReadOBJ :: CString -> IO (Ptr a)
-foreign import ccall unsafe "glmList" glmList :: Ptr a -> GLuint -> IO GLuint
-foreign import ccall unsafe "glmDraw" glmDraw :: Ptr a -> GLuint -> IO ()
-foreign import ccall unsafe "glmUnitize" glmUnitize :: Ptr a -> IO GLfloat
+foreign import ccall safe "glmReadOBJ" glmReadOBJ :: CString -> IO (Ptr a)
+foreign import ccall safe "glmList" glmList :: Ptr a -> GLuint -> IO GLuint
+foreign import ccall safe "glmDraw" glmDraw :: Ptr a -> GLuint -> IO ()
+foreign import ccall safe "glmUnitize" glmUnitize :: Ptr a -> IO GLfloat
 
-zLoadObjectFile :: String -> IO ZObject
-zLoadObjectFile objfile = withCString objfile $ \str -> do
+zLoadObjectFile :: String -> Bool -> IO ZObject
+zLoadObjectFile objfile unit = withCString objfile $ \str -> do
                             ptr <- glmReadOBJ str
-                            glmUnitize ptr
+                            when unit $ glmUnitize ptr >> return ()
                             lst <- glmList ptr 22
                             return $ ZObject (DisplayList lst)

@@ -5,7 +5,9 @@ import Control.Concurrent.MVar
 --- Channels are just wrappers around MVars ---                    
 newtype ZChannel a = ZChannel (MVar a)
 
-zNewChan a = newMVar a >>= \mvar -> return $ ZChannel mvar
+zNewChan a = newMVar a >>= (return . ZChannel)
+
+zNewEmptyChan = newEmptyMVar >>= (return . ZChannel)
     
 zPeekChan (ZChannel c) = readMVar c
                          
@@ -18,4 +20,6 @@ zPutChan (ZChannel c)  = putMVar c
 zModifyChan_ (ZChannel c) = modifyMVar_ c
 
 zSwapChan (ZChannel c) = swapMVar c
+
+zIsEmpty (ZChannel c) = isEmptyMVar c                         
 

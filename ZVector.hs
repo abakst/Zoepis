@@ -3,14 +3,18 @@ module ZVector where
 import Data.SG hiding (origin)
 import Control.Applicative
 import Debug.Trace
+import Graphics.Rendering.OpenGL
 
 debug x = trace (show x) x
 
 type Vector3D a = Rel3' a
 type Point3D  a = Vector3D a
 
+vecMap :: Num b => (a -> b) -> Vector3D a -> Vector3D b 
+vecMap = fmapNum1    
+
 data Quaternion a = Quaternion a a a a deriving (Show, Read)
-                   
+
 instance Functor Quaternion where             
   fmap f (Quaternion w x y z) = Quaternion (f w) (f x) (f y) (f z)
   
@@ -125,3 +129,13 @@ unit = Data.SG.unitVector
 
 zeroV :: Num a => Vector3D a
 zeroV = vector3D (0, 0, 0)
+
+class IsoVecTo a where    
+    fromVec3D :: Vector3D f -> a f
+    
+instance IsoVecTo Vector3 where
+    fromVec3D v = Vector3 (vecX v) (vecY v) (vecZ v)
+    
+instance IsoVecTo Vertex3 where
+    fromVec3D v = Vertex3 (vecX v) (vecY v) (vecZ v)    
+  

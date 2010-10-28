@@ -1,11 +1,12 @@
 module ZGraphics where
 
-import Control.Concurrent (ThreadId, forkIO, forkOS, yield)
+import Control.Concurrent (yield)
 import Graphics.Rendering.OpenGL hiding (get)
 import Graphics.UI.GLUT hiding (get, LeftButton)
 import Data.Map
 import Control.Monad.State
 import Data.IORef
+import System.Exit
 
 import ZObject
 import ZChannel
@@ -23,13 +24,13 @@ zEmptyResourceList = GraphicsResources {
                      }
 
 zUpdateGraphics :: IO ()
-zUpdateGraphics = postRedisplay Nothing >> yield
+zUpdateGraphics = postRedisplay Nothing  >> yield
                   
 -- I'll add exception handling one day --
-zLoadObject :: Int -> String -> ZResourceLoader
-zLoadObject id str = do
+zLoadObject :: Int -> String -> Bool -> ZResourceLoader
+zLoadObject id str unit = do
   res <- get
-  obj <- lift $ zLoadObjectFile str
+  obj <- lift $ zLoadObjectFile str unit
   let newres = insert id obj (gDisplayLists res)
   put $ res { gDisplayLists = newres }
   return ()                     
@@ -47,7 +48,6 @@ data ZGraphicsGL a = GraphicsGL {
       gProgname :: !String
     , gWidth    :: !GLsizei
     , gHeight   :: !GLsizei
-    , gThreadId :: !ThreadId
     , gSceneChannel :: !(ZChannel a)
     , gEventChannel :: !(ZChannel [ZEvent])
     }
@@ -56,21 +56,20 @@ zInitialize :: ZRenderGL scene =>
                String ->
                GLsizei ->
                GLsizei ->
-               scene ->
                ZResourceLoader ->
-               IO (ZGraphicsGL scene)
-zInitialize name width height scene loader =
-    do sceneVar <- zNewChan scene
+               scene ->
+               ZChannel Bool -> 
+               IO (ZGraphicsGL scene, IO ())
+zInitialize name width height loader startScene exit =
+    do sceneVar <- zNewChan startScene
        eventVar <- zNewChan []
-       threadId <- forkIO $ startGL loader sceneVar eventVar
-       return GraphicsGL {
+       return (GraphicsGL {
                     gProgname = name
                   , gWidth = width
                   , gHeight = height
-                  , gThreadId = threadId
                   , gSceneChannel = sceneVar
                   , gEventChannel = eventVar
-                  }
+                  }, startGL loader sceneVar eventVar exit)
         where
           display res sceneChan = do
             scene <- zPeekChan sceneChan
@@ -79,7 +78,7 @@ zInitialize name width height scene loader =
             zRenderGL res scene
             flush
             yield
-          startGL resloader sceneVar eventVar = do
+          startGL resloader sceneVar eventVar exitVar = do
             --- Basic init ---
             initialize name []
             initialDisplayMode $= [SingleBuffered, RGBMode, WithDepthBuffer]
@@ -87,6 +86,9 @@ zInitialize name width height scene loader =
             createWindow name
             res <- execStateT resloader zEmptyResourceList
             displayCallback $= display res sceneVar
+            idleCallback $= (Just $ do x <- zIsEmpty exitVar
+                                       when (not x) exitSuccess
+                                       yield)
             motionCallback  $= Just (mouseCallback eventVar)
             keyboardMouseCallback $= Just (buttonCallback eventVar)
             --- Other stuff now ---
@@ -95,7 +97,7 @@ zInitialize name width height scene loader =
             perspective 45 
                         (fromIntegral width / fromIntegral height)
                         0.1
-                        50
+                        200
             matrixMode $= Modelview 0
             depthFunc $= Just Less
             hint PointSmooth $= Nicest
@@ -117,7 +119,7 @@ setupLights = do
   position (Light 1)    $= Vertex4 (-1.0) 2 (-1.0) (1::GLfloat)                
   
 sendEvent :: ZEvent -> ZChannel [ZEvent] -> IO ()  
-sendEvent e chan = zModifyChan_ chan (\es -> return (e:es)) >> yield
+sendEvent e chan = zModifyChan_ chan (\es -> return (e:es))  >> yield
 
 mouseCallback :: ZChannel [ZEvent] -> MotionCallback
 mouseCallback chan (Position x y) = let e = MouseMove (x, y)
@@ -131,7 +133,7 @@ buttonCallback chan (Char c) st _ _ = let e = case st of
                                                 Down -> KeyPress
                                       in sendEvent (e c) chan
 buttonCallback _ _ _ _ _ = return ()
-
+{-
 drawAxes = do
      lighting $= Disabled
      shadeModel $= Flat
@@ -149,3 +151,4 @@ drawAxes = do
                 vertex (Vertex3 0.0 0.0 1.0::Vertex3 GLfloat)
      shadeModel $= Flat
      lighting $= Enabled
+-}

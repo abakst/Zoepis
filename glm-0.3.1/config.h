@@ -14,10 +14,10 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define if you have the IJG JPEG library */
-/* #undef HAVE_LIBJPEG */
+#define HAVE_LIBJPEG 1
 
 /* Define if you have the PNG library */
-/* #undef HAVE_LIBPNG */
+#define HAVE_LIBPNG 1
 
 /* Define if you have the SDL_image library */
 /* #undef HAVE_LIBSDL_IMAGE */
