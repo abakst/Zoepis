@@ -1,0 +1,7 @@
+Installation/Compilation
+========================
+For now, the only way to build this is to make sure that libglm, libpng, and libjpeg are installed on your system.
+
+Then, run `make basic_test,' and you should either be all set.
+
+When there is a finished product, I might put effort into developing a .cabal file that will do all this for you.
