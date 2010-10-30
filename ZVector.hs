@@ -130,6 +130,17 @@ unit = Data.SG.unitVector
 zeroV :: Num a => Vector3D a
 zeroV = vector3D (0, 0, 0)
 
+toDeg = (*(180/pi))
+
+zDot :: Floating a => Vector3D a -> Vector3D a -> a
+zDot = dotProduct
+
+zCross :: Floating a => Vector3D a -> Vector3D a -> Vector3D a
+zCross = cross
+
+zMagSq :: Floating a => Vector3D a -> a
+zMagSq = magSq
+
 class IsoVecTo a where    
     fromVec3D :: Vector3D f -> a f
     

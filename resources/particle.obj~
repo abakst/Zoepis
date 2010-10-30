@@ -1,0 +1,19 @@
+# Square face for a particle
+mtllib particle.mtl
+usemtl particle
+s off
+v -0.001 -0.001 0.000
+v 0.001  -0.001 0.000
+v 0.001 0.001 0.000
+v -0.001 0.001 0.000
+# textures
+vt 0.000 0.000
+vt 1.000 0.000
+vt 1.000 1.000
+vt 0.000 1.000
+# normals
+vn 0.000 0.000 1.000
+# faces
+f 1/1/1 2/2/1 3/3/1
+f 1/1/1 3/3/1 4/4/1
+

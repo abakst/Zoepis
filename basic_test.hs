@@ -18,12 +18,14 @@ import Control.Concurrent
 import System.Exit
 import System.CPUTime
 
-cameraStart = (xAxis+4*zAxis+2*yAxis, origin, yAxis)
-
+cameraStart = (4*xAxis+4*zAxis, origin, yAxis)
+--cameraStart = (40*yAxis, origin, zAxis)
 resources  = shipR
 startScene = ZSceneRoot Nothing cameraStart ZEmptyScene
-objects    = [ newShip 0.1 origin zAxis
-             , newShip 0.1 (origin+yAxis+xAxis) zAxis
+defaultSpeed = scale 0.1 zAxis
+objects    = [ newShip origin defaultSpeed xAxis 0
+             , newShip (origin-yAxis) (scale 0.1 xAxis) zAxis 1
+             , newShip (origin+yAxis) (scale 0.1 (xAxis+zAxis)) (-zAxis) 2
              ]
              
 data GameState = GameState {
@@ -57,7 +59,7 @@ main = do time     <- zGetTime
 myGame :: ZGameLoop GameState ()
 myGame = do handleEvents
             moveCamera
-            everyNTicks 300 $ do
+            everyNTicks 500 $ do
               chan <- gets stSceneChannel
               objs <- gets stObjects
               modify (\s -> s{stObjects = map (flip objUpdate 0) objs})
@@ -127,7 +129,7 @@ moveCamera = do
   kv@(KV pressed) <- gets stPressedKeys
   chan <- gets stSceneChannel
   lift $ do root <- zPeekChan chan
-            let scale = 0.1
+            let scale = 0.002
             let right = if zKeySet kv zDKey
                         then scale else if zKeySet kv zAKey
                                         then -scale else 0

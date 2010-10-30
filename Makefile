@@ -1,7 +1,7 @@
 # Makefile for thing.
 
 HC=ghc
-HCFLAG=--make -O2
+HCFLAG=--make -O2 -outputdir ./bin
 HLFLAG=-lglm -ljpeg -lpng -threaded
 DO=$(HC) $(HCFLAG) $(HLFLAG)
 
