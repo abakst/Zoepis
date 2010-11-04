@@ -7,6 +7,7 @@ import ZObject
 import ZVector hiding (scale)
 
 import Data.Map
+import Data.List (sortBy)
 import Graphics.Rendering.OpenGL
 import Graphics.Rendering.OpenGL.GL.CoordTrans
 
@@ -14,41 +15,51 @@ import Graphics.Rendering.OpenGL.GL.CoordTrans
 data ZSceneRoot = ZSceneRoot {
       zSceneSkybox :: Maybe ZSkybox
     , zSceneCamera :: (Point3D GLdouble, Point3D GLdouble, Vector3D GLdouble)
-    , zSceneTree   :: ZSceneTree
+    , zSceneObjects :: [ZSceneObject]
     }
 
 data ZSkybox = ZSkybox ZObject
 
-data ZSceneTree = ZObjectNode Int
-                | ZXFormNode ZTransform ZSceneTree
-                | ZGroupNode [ZSceneTree]
-                | ZParticles ZParticleEngine
-                | ZLiteral (IO ()) --mostly for debugging
-                | ZEmptyScene
+data ZSceneObject = ZModel ZScale ZRotate ZTranslate Int
+                  | ZParticles ZParticleEngine
+                  | ZLiteral (IO ()) --mostly for debugging
+                  | ZEmptyScene
 
-zMergeScenes :: ZSceneTree -> ZSceneTree -> ZSceneTree
-zMergeScenes t1 t2 = ZGroupNode [t1, t2]
-                      
-data ZTransform = ZScale GLfloat GLfloat GLfloat
-                | ZRotate (Vector3D GLfloat) GLfloat
-                | ZTranslate (Vector3D GLfloat)
-                      
+data ZScale = ZScale { sX :: Float , sY :: Float , sZ ::Float }
+data ZRotate = ZRotate { rQuat :: Quaternion Float }
+data ZTranslate = ZTranslate { tTrans :: Vector3D Float }
+
+arrange zsr = zsr { zSceneObjects = arrangeOs (zSceneObjects zsr) }
+arrangeOs = sortBy (\x y -> case (x,y) of
+                              (ZParticles _, ZParticles _) -> EQ
+                              (ZParticles _, _) -> GT
+                              (_, ZParticles _) -> LT
+                              _ -> EQ)
+
+zNoScale = ZScale 1 1 1
+zScale = ZScale
+
+zRot = ZRotate
+
+zNoTrans = ZTranslate $ vector3D (0,0,0)
+zTrans   = ZTranslate
+
 instance ZRenderGL ZSceneRoot where
-    zRenderGL res (ZSceneRoot _ (pt,at,up) st) =
+    zRenderGL res (ZSceneRoot _ (pt,at,up) os) =
         lookAt (fromVec3D pt) (fromVec3D at) (fromVec3D up)
-                   >> zRenderGL res st
-      
-instance ZRenderGL ZSceneTree where
+                   >> mapM_ (zRenderGL res) (arrangeOs os)
+
+instance ZRenderGL ZSceneObject where
   zRenderGL _ ZEmptyScene  = return ()
   zRenderGL _ (ZLiteral a) = a
-  zRenderGL res (ZObjectNode objid) = callList dlist
+  zRenderGL res (ZModel s r t objid) = preservingMatrix $ do
+    translate .  toGLVec $ tTrans t
+    rotate (toGL .(*(180/pi)). angleOfRot $ rQuat r) (toGLVec . axisOfRot $ rQuat r)
+    scale (toGL $ sX s ) (toGL $ sY s) (toGL $ sZ s)
+    callList dlist
       where
-        (ZObject dlist) = gDisplayLists res ! objid
+        (ZObject dlist)    = gDisplayLists res ! objid
+        toGL :: Real a => a -> GLfloat
+        toGL               = realToFrac -- Hey, it works.
+        toGLVec            = fromVec3D . vecMap toGL
   zRenderGL res (ZParticles pe) = renderParticles res pe
-  zRenderGL res (ZGroupNode g) = mapM_ (zRenderGL res) g
-  zRenderGL res (ZXFormNode xform t) =
-      preservingMatrix $ applyTransform xform >> zRenderGL res t
-          where
-            applyTransform (ZScale x y z) = scale x y z
-            applyTransform (ZRotate v angle) = rotate angle (fromVec3D v)
-            applyTransform (ZTranslate v) = translate $ fromVec3D v

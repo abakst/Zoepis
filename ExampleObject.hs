@@ -6,97 +6,137 @@ import ZGraphics
 import ZVector
 import ZRandom
 
-type DT = Integer
+import Control.Monad
+
+type DT = Float
 
 data ExampleObject = Object {
       objUpdate :: DT -> ExampleObject
-    , objScene :: ZSceneTree
-    }                   
-                     
-data PhysicalState = PS {
-      psPos :: Vector3D Double
-    , psVel :: Vector3D Double
-    , psAcc :: Vector3D Double
-    , psUp  :: Vector3D Double
+    , objScene :: [ZSceneObject]
     }
-
-shipR = do zLoadObject 0 "resources/patrol.obj" True                       
-
-newShip x0 v0 a0 seed = ship (PS x0 v0 a0 yAxis) rng0 pe0
-    where
-      rng0 = zRandGen seed 
-      pe0 = zNewParticleEngine 1 750 0 myParticle myStep
-      myParticle = zNewParticle 0.05 0.01 0.1 (return (0.3, 0.6, 0.1))
-      myStep     = zStepParticle myParticle 0
+                     
+data Orientation = Orient {
+  oRotation :: Quaternion Float
+  , oCofR    :: Point3D Float  -- point about which to rotate
+  , oOffset  :: Vector3D Float -- oCofR o + oOffset is the position
+  } deriving Show
+               
+oUp o = rotateVector (oRotation o) yAxis
+oForward o = rotateVector (oRotation o) zAxis
+oRight o = rotateVector (oRotation o) (-xAxis)
                    
-ship ps rng pe = Object {
-                   objUpdate = updateShip ps rng pe
-                 , objScene  = renderShip ps pe
+rotateO :: Quaternion Float -> Orientation -> Orientation                   
+rotateO r o = o {
+                oRotation = r `mulq` (oRotation o)
+              , oOffset  = rot (oOffset o)
+              }
+    where rot v = rotateVector r v
+          
+offsetO :: Vector3D Float -> Orientation -> Orientation          
+offsetO v o = o { oOffset = (oOffset o) + v }
+
+transO :: Vector3D Float -> Orientation -> Orientation
+transO v o = o { oCofR = (oCofR o) + v }
+                   
+oPos o = oCofR o + oOffset o                   
+
+newOrient :: Point3D Float -> Quaternion Float  -> Orientation
+newOrient pos rot = Orient { oCofR = pos
+                           , oOffset = vector3D (0,0,0)
+                           , oRotation = rot
+                           }
+  where up = rotateVector rot yAxis
+        forward = rotateVector rot zAxis
+                        
+-- Ship specific, an example of an object --
+
+data Ship = Ship {
+      sOrient :: Orientation
+    , sSpeed  :: Float
+    , sEngineL :: (ZParticleEngine, Orientation)
+    , sEngineR :: (ZParticleEngine, Orientation)
+    , sRand    :: ZRandGen
+    }
+            
+shipVel :: Ship -> Vector3D Float            
+shipVel s = scale (sSpeed s) (oForward . sOrient $ s)
+
+shipDir :: Ship -> Vector3D Float
+shipDir = oForward . sOrient
+
+moveShip :: Ship -> Vector3D Float -> Ship
+moveShip s v = s { sOrient = transO v (sOrient s) 
+                 , sEngineL = moveEngine (sEngineL s)
+                 , sEngineR = moveEngine (sEngineR s)
                  }
+    where moveEngine (pe, o) = (pe, transO v o)
+          
+rotateShip :: Ship -> Quaternion Float -> Ship          
+rotateShip s r = s { sOrient = rotateO r (sOrient s)
+                   , sEngineL = rotEngine (sEngineL s)
+                   , sEngineR = rotEngine (sEngineR s)
+                   }
+    where rotEngine (pe, o) = (pe, rotateO r o)
+                 
+shipR = do zLoadObject 0 "resources/patrol.obj" True                       
+           
+newShip pos rot speed seed = mkShip $ Ship {
+                                  sOrient = shipO
+                                , sSpeed = speed
+                                , sEngineL = eL
+                                , sEngineR = eR
+                                , sRand = zRandGen seed
+                                }
+    where shipO = newOrient pos rot
+          engineO = shipO
+          upOff = scale 0.27 (oUp shipO)
+          upRight = scale 0.25    (oRight shipO)
+          eL = newEngine (offsetO (upOff - upRight) shipO)
+                         (return (0.3, 0.1, 0.6))
+          eR = newEngine (offsetO (upOff + upRight) shipO)
+                         (return (0.3, 0.1, 0.6))
 
-                                 
-updateShip :: PhysicalState -> 
-              ZRandGen ->
-              ZParticleEngine ->
-              DT ->
-              ExampleObject
-updateShip ps rng pe dt = ship ps' rng' pe'
+           
+mkShip :: Ship -> ExampleObject           
+mkShip s = Object update render
     where
-      pe' = updateParticles pe 
-      p' = psPos ps + (psVel ps)
-      v' = psVel ps + (scale 0.003 $ psAcc ps)
-      v'' = if zMagSq v' > 0.1
-            then scale (sqrt (0.1/zMagSq v')) v'
-            else v'
-      a' = if (zMagSq $ psAcc ps) < 0.1
-             then origin
-             else psAcc ps
-      right = zCross (unit $ psVel ps) (unit $ psUp ps)
-      (a'', rng') = zRunRand (do p <- zGetRandomR (0, 1)
-                                 (if p < (0.5::Double)
-                                  then do s <- zGetRandomR (-0.2, 0.6)
-                                          return $ scale s right + a'
-                                  else return a')) rng
-      ps' = PS p' v'' a'' (psUp ps)
+      stepEngine (pe, o) = (zUpdateParticles (oPos o) (scale (-1) $ oForward o) pe, o)
+      transShip dt ship = moveShip ship (scale dt (shipVel ship))
+{--}      
+      stepEngines ship = ship { sEngineL = (stepEngine $ sEngineL ship)
+                              , sEngineR = (stepEngine $ sEngineR ship)
+                              }
+--}
+{-                          
+      stepEngines = id
+--}
+      stepShip sh dt = stepEngines $ transShip dt sh
+      update dt = mkShip $ stepShip s dt
+      render = renderShip s
       
-
-renderShip :: PhysicalState ->
-              ZParticleEngine ->
-              ZSceneTree
-renderShip (PS pos vel acc up) pe =
-    if zMagSq acc > 0.1
-    then
-        ZXFormNode (ZTranslate $ vecMap realToFrac pos)
-        $ ZXFormNode (ZRotate rollV roll')
-          $ ZXFormNode (ZRotate rotV rotDeg') 
-            $ ZGroupNode [rFuselage, rEngine pe]
-    else
-        ZXFormNode (ZTranslate $ vecMap realToFrac pos)
-          $ ZXFormNode (ZRotate rotV rotDeg') 
-            $ ZGroupNode [rFuselage, rEngine pe]
-    where
-      rollDir = (unit (unit vel `zCross` unit acc)) `zDot` up
-      rollb   = zMagSq (unit vel `zCross` unit acc) > 0.001
-      rollS   = (*  min (0.001*zMagSq acc / zMagSq vel) 0.5)
-      roll = realToFrac.rollS.toDeg.acos $ (unit vel `zDot` unit acc)
-      roll'= if rollDir <= 0
-             then roll
-             else 360 - roll
-      rollV = vecMap realToFrac (unit vel)
-      rotV = vecMap realToFrac up
-      right = unit vel `zCross` up
-      rotDeg = realToFrac . toDeg . acos $ (unit vel `zDot` zAxis)
-      rotDeg' = if vecX vel >= 0
-                then rotDeg
-                else 360 - rotDeg
-      rFuselage = ZObjectNode 0
-      rEngine pe = ZGroupNode
-                   [ ZXFormNode (ZTranslate $ (scale 0.25 yAxis)
-                                                + (scale 0.22 xAxis))
-                   $ ZXFormNode (ZRotate xAxis 270)
-                         $ ZParticles pe
-                   , ZXFormNode (ZTranslate $ (scale 0.25 yAxis)
-                                                - (scale 0.22 xAxis))
-                                    $ ZXFormNode (ZRotate xAxis 270)
-                                          $ ZParticles pe
-                   ]                             
+randomRot :: Float -> Orientation -> ZRandom (Quaternion (Float))
+randomRot threshold orientation = do
+  {
+  ; p <- zGetRandomR (0, 1.0::Float)
+  ; if p <= threshold
+    then do
+      theta <- zGetRandomR (0, 0.02)
+      let rot = rotation theta (oForward orientation + oRight orientation)
+      return rot
+    else return $ rotation 0 (vector3D (0,0,0))
+  }
+      
+newEngine o col =
+  (zNewParticleEngine 25 1 (oPos o) (scale (-1) $ oForward o) 0.02 0.01 0.001 col up,o)
+  where up = zStepParticle 0
+        
+renderShip :: Ship -> [ZSceneObject]
+renderShip s = 
+  [ZModel zNoScale (zRot rotation) (zTrans pos) 0
+  ,ZParticles peR
+  ,ZParticles peL]
+    where up = oUp $ sOrient s
+          pos = oPos $ sOrient s
+          peL = fst . sEngineL $ s
+          peR = fst . sEngineR $ s
+          rotation = oRotation $ sOrient s

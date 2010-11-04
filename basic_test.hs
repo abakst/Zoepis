@@ -10,6 +10,7 @@ import ZEventMessage
 import ZParticle
 import ZCamera
 import ZKeys
+import Texture
 
 import ExampleObject    
 
@@ -20,13 +21,16 @@ import System.CPUTime
 
 cameraStart = (4*xAxis+4*zAxis, origin, yAxis)
 --cameraStart = (40*yAxis, origin, zAxis)
-resources  = shipR
-startScene = ZSceneRoot Nothing cameraStart ZEmptyScene
-defaultSpeed = scale 0.1 zAxis
-objects    = [ newShip origin defaultSpeed xAxis 0
-             , newShip (origin-yAxis) (scale 0.1 xAxis) zAxis 1
-             , newShip (origin+yAxis) (scale 0.1 (xAxis+zAxis)) (-zAxis) 2
-             ]
+resources  = shipR >> zLoadTexture 0 "resources/Part.jpg"
+startScene = ZSceneRoot Nothing cameraStart [ZEmptyScene]
+{- objects    = [ newShip origin (rotation (pi/2) yAxis) 0.3 0
+             , newShip origin (-zAxis) 0.3 0
+             , newShip origin (zAxis+xAxis) 0.3 0
+             , newShip origin (zAxis-xAxis) 0.3 0
+             , newShip origin xAxis 0.3 0
+             , newShip origin (-xAxis) 0.3 0
+             ] -}
+objects n = [ newShip origin (rotation (t*pi/(n+1)) yAxis) 0.7 0 | t <- [0..n] ]
              
 data GameState = GameState {
       stGraphics    :: ZGraphicsGL ZSceneRoot
@@ -48,7 +52,7 @@ main = do time     <- zGetTime
                              , stMouseV = (0,0)
                              , stLastTick = time
                              , stSceneChannel = gSceneChannel gr
-                             , stObjects = objects
+                             , stObjects = objects 4
                              , stGameOver = gameOver
                              }
           forkOS $ gameloop gs myGame
@@ -59,14 +63,14 @@ main = do time     <- zGetTime
 myGame :: ZGameLoop GameState ()
 myGame = do handleEvents
             moveCamera
-            everyNTicks 500 $ do
+            everyNTicks 300 $ do
               chan <- gets stSceneChannel
               objs <- gets stObjects
-              modify (\s -> s{stObjects = map (flip objUpdate 0) objs})
+              modify (\s -> s{stObjects = map (flip objUpdate 0.1) objs})
               lift $ do root <- zPeekChan chan
-                        let scene = map objScene objs
+                        let scene = concatMap objScene objs
                         zSwapChan chan $ root {
-                                        zSceneTree = ZGroupNode scene
+                                        zSceneObjects = scene
                                       }
             lift $ zUpdateGraphics
             

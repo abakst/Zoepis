@@ -6,21 +6,25 @@ import Graphics.UI.GLUT hiding (get, LeftButton)
 import Data.Map
 import Control.Monad.State
 import Data.IORef
+import Data.List (sortBy)
 import System.Exit
 
 import ZObject
 import ZChannel
 import ZEventMessage
+import Texture
 
 --- Resources ---
 data ZGraphicsResources = GraphicsResources {
       gDisplayLists :: (Map Int ZObject)
+    , gTextures     :: (Map Int TextureObject)
     }
                           
 type ZResourceLoader = StateT ZGraphicsResources IO ()
 
 zEmptyResourceList = GraphicsResources {
                        gDisplayLists = empty
+                     , gTextures = empty
                      }
 
 zUpdateGraphics :: IO ()
@@ -35,6 +39,11 @@ zLoadObject id str unit = do
   put $ res { gDisplayLists = newres }
   return ()                     
 
+zLoadTexture :: Int -> String -> ZResourceLoader
+zLoadTexture id str = do
+  l <- lift $ loadTexture str
+  modify (\res -> res { gTextures = insert id l (gTextures res) })
+  
 --- Definition of the class of renderable scenes ---
 class ZRenderGL a where                     
     zRenderGL :: ZGraphicsResources -> a -> IO ()                     

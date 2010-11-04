@@ -108,6 +108,9 @@ point3D = makeRel3
 scale :: (Num a) =>  a -> Vector3D a -> Vector3D a
 scale s = fmapNum1 (*s)
 
+setMag :: (Floating a, Num a) => a -> Vector3D a -> Vector3D a         
+setMag s v = ZVector.scale (s / (sqrt $ magSq v)) v
+  
 xAxis :: Num a => Vector3D a
 xAxis = vector3D (1, 0, 0)
 
@@ -134,6 +137,8 @@ toDeg = (*(180/pi))
 
 zDot :: Floating a => Vector3D a -> Vector3D a -> a
 zDot = dotProduct
+
+dot = zDot
 
 zCross :: Floating a => Vector3D a -> Vector3D a -> Vector3D a
 zCross = cross

@@ -10,4 +10,4 @@ basic_test:
 	$(DO) basic_test.hs -o basic_test
 
 clean:
-	rm -f *.hi *.o *~ basic_test
+	rm -rf *.hi *.o *~ basic_test bin
