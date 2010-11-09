@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 module ZScene where
 
-import ZParticle
+import ZParticles
 import ZGraphics
 import ZObject
 import ZVector hiding (scale)
@@ -20,8 +20,8 @@ data ZSceneRoot = ZSceneRoot {
 
 data ZSkybox = ZSkybox ZObject
 
-data ZSceneObject = ZModel ZScale ZRotate ZTranslate Int
-                  | ZParticles ZParticleEngine
+data ZSceneObject = ZModel !ZScale !ZRotate !ZTranslate !Int
+                  | ZParticles ![ZParticle]
                   | ZLiteral (IO ()) --mostly for debugging
                   | ZEmptyScene
 
@@ -62,4 +62,4 @@ instance ZRenderGL ZSceneObject where
         toGL :: Real a => a -> GLfloat
         toGL               = realToFrac -- Hey, it works.
         toGLVec            = fromVec3D . vecMap toGL
-  zRenderGL res (ZParticles pe) = renderParticles res pe
+  zRenderGL res (ZParticles ps) = renderParticles res ps

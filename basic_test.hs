@@ -7,7 +7,7 @@ import ZVector
 import ZGame
 import ZChannel
 import ZEventMessage
-import ZParticle
+--import ZParticle
 import ZCamera
 import ZKeys
 import Texture
@@ -21,16 +21,11 @@ import System.CPUTime
 
 cameraStart = (4*xAxis+4*zAxis, origin, yAxis)
 --cameraStart = (40*yAxis, origin, zAxis)
-resources  = shipR >> zLoadTexture 0 "resources/Part.jpg"
+resources  = shipR
 startScene = ZSceneRoot Nothing cameraStart [ZEmptyScene]
-{- objects    = [ newShip origin (rotation (pi/2) yAxis) 0.3 0
-             , newShip origin (-zAxis) 0.3 0
-             , newShip origin (zAxis+xAxis) 0.3 0
-             , newShip origin (zAxis-xAxis) 0.3 0
-             , newShip origin xAxis 0.3 0
-             , newShip origin (-xAxis) 0.3 0
-             ] -}
-objects n = [ newShip origin (rotation (t*pi/(n+1)) yAxis) 0.7 0 | t <- [0..n] ]
+numObjs = 25
+objects :: Int -> [ExampleObject]          
+objects n = [newShip origin (rotation (2*(fromIntegral t)*pi/(fromIntegral n)) yAxis) 0.5 (fromIntegral $ t*t*t) | t <- [1..n]]
              
 data GameState = GameState {
       stGraphics    :: ZGraphicsGL ZSceneRoot
@@ -52,10 +47,10 @@ main = do time     <- zGetTime
                              , stMouseV = (0,0)
                              , stLastTick = time
                              , stSceneChannel = gSceneChannel gr
-                             , stObjects = objects 4
+                             , stObjects = objects numObjs
                              , stGameOver = gameOver
                              }
-          forkOS $ gameloop gs myGame
+          forkOS $ {-# SCC "loop" #-} gameloop gs myGame
           startGr
               where gameloop st lp = do st' <- zGameLoopStep st lp
                                         gameloop st' lp
@@ -63,7 +58,7 @@ main = do time     <- zGetTime
 myGame :: ZGameLoop GameState ()
 myGame = do handleEvents
             moveCamera
-            everyNTicks 300 $ do
+            everyNTicks 500 $ do
               chan <- gets stSceneChannel
               objs <- gets stObjects
               modify (\s -> s{stObjects = map (flip objUpdate 0.1) objs})
@@ -72,6 +67,7 @@ myGame = do handleEvents
                         zSwapChan chan $ root {
                                         zSceneObjects = scene
                                       }
+
             lift $ zUpdateGraphics
             
 everyNTicks :: Integer -> ZGameLoop GameState a ->
@@ -79,7 +75,10 @@ everyNTicks :: Integer -> ZGameLoop GameState a ->
 everyNTicks n a = do
   t0 <- gets stLastTick
   t1 <- lift $ zGetTime
-  when (t1 - t0 > n) (a >> modify (\s -> s{stLastTick = t1} ))
+  loop t1 (t1 - t0)
+  where loop t1 dif = if (dif > n)
+                   then a >> loop t1 (dif - n)
+                   else modify (\s -> s { stLastTick = t1 - dif })
   
 handleEvents :: ZGameLoop GameState ()
 handleEvents = do graphics <- gets stGraphics
@@ -107,17 +106,19 @@ mouseMoved (x,y) = do
 
 endGame = gets stGameOver >>= (lift . flip zPutChan True)                    
 
-keyPress c = if c == 'q'
-             then endGame
-             else do
-               kv <- gets stPressedKeys
-               let kv' = case c of 
-                           'a' -> (kv `zSetKey` zAKey) `zClearKey` zDKey
-                           's' -> (kv `zSetKey` zSKey) `zClearKey` zWKey
-                           'd' -> (kv `zSetKey` zDKey) `zClearKey` zAKey
-                           'w' -> (kv `zSetKey` zWKey) `zClearKey` zSKey
-                           _ -> kv
-               modify (\s -> s { stPressedKeys = kv' })
+keyPress c = case c of
+               'q' -> endGame
+               'r' -> modify (\s -> s { stObjects = objects numObjs })
+               _ ->  do
+                      kv <- gets stPressedKeys
+                      let kv' =
+                              case c of 
+                                'a' -> (kv `zSetKey` zAKey) `zClearKey` zDKey
+                                's' -> (kv `zSetKey` zSKey) `zClearKey` zWKey
+                                'd' -> (kv `zSetKey` zDKey) `zClearKey` zAKey
+                                'w' -> (kv `zSetKey` zWKey) `zClearKey` zSKey
+                                _ -> kv
+                      modify (\s -> s { stPressedKeys = kv' })
 
 keyRelease c = do kv <- gets stPressedKeys
                   let kv' = case c of 

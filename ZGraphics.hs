@@ -112,7 +112,7 @@ zInitialize name width height loader startScene exit =
             hint PointSmooth $= Nicest
             shadeModel $= Smooth
             cullFace $= Nothing
-            clearColor $= Color4 0 0 0 0
+            clearColor $= Color4 0.1 0.1 0.1 0.0
             clearDepth $= 1.0
             normalize $= Enabled
             setupLights
@@ -122,11 +122,12 @@ setupLights = do
   lighting              $= Enabled
   light (Light 0)       $= Enabled
   light (Light 1)       $= Enabled
-  lightModelAmbient     $= Color4 0.4 0.4 0.4 1
-  lightModelLocalViewer $= Disabled
+  lightModelAmbient     $= Color4 1.5 1.5 1.5 1
+  lightModelLocalViewer $= Enabled
   position (Light 0)    $= Vertex4 1 2 1 (1::GLfloat)
-  position (Light 1)    $= Vertex4 (-1.0) 2 (-1.0) (1::GLfloat)                
-  
+  position (Light 1)    $= Vertex4 (-1.0) 2 (-1.0) (1::GLfloat)
+           
+
 sendEvent :: ZEvent -> ZChannel [ZEvent] -> IO ()  
 sendEvent e chan = zModifyChan_ chan (\es -> return (e:es))  >> yield
 

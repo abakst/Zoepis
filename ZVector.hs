@@ -13,7 +13,7 @@ type Point3D  a = Vector3D a
 vecMap :: Num b => (a -> b) -> Vector3D a -> Vector3D b 
 vecMap = fmapNum1    
 
-data Quaternion a = Quaternion a a a a deriving (Show, Read)
+data Quaternion a = Quaternion !a !a !a !a deriving (Show, Read)
 
 instance Functor Quaternion where             
   fmap f (Quaternion w x y z) = Quaternion (f w) (f x) (f y) (f z)
