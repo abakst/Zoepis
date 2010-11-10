@@ -23,9 +23,9 @@ cameraStart = (4*xAxis+4*zAxis, origin, yAxis)
 --cameraStart = (40*yAxis, origin, zAxis)
 resources  = shipR
 startScene = ZSceneRoot Nothing cameraStart [ZEmptyScene]
-numObjs = 25
+numObjs = 3
 objects :: Int -> [ExampleObject]          
-objects n = [newShip origin (rotation (2*(fromIntegral t)*pi/(fromIntegral n)) yAxis) 0.5 (fromIntegral $ t*t*t) | t <- [1..n]]
+objects n = [newShip origin (rotation (2*(fromIntegral t)*pi/(fromIntegral n)) yAxis) 0.5 (fromIntegral $ t*t*t) | t <- [0..n-1]]
              
 data GameState = GameState {
       stGraphics    :: ZGraphicsGL ZSceneRoot
@@ -50,7 +50,9 @@ main = do time     <- zGetTime
                              , stObjects = objects numObjs
                              , stGameOver = gameOver
                              }
-          forkOS $ {-# SCC "loop" #-} gameloop gs myGame
+          forkOS $ do x <- zTakeChan (gEventChannel gr)
+                      zPutChan (gEventChannel gr) []
+	              x `seq` gameloop gs myGame
           startGr
               where gameloop st lp = do st' <- zGameLoopStep st lp
                                         gameloop st' lp
@@ -58,7 +60,7 @@ main = do time     <- zGetTime
 myGame :: ZGameLoop GameState ()
 myGame = do handleEvents
             moveCamera
-            everyNTicks 500 $ do
+            everyNTicks 250 $ do
               chan <- gets stSceneChannel
               objs <- gets stObjects
               modify (\s -> s{stObjects = map (flip objUpdate 0.1) objs})

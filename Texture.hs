@@ -29,7 +29,6 @@ loadTexture image = do
     (Left s ) -> error s
     (Right b) -> withBitmap b . texify . bitmapSize $ b
   textureBinding Texture2D $= Nothing
-  putStrLn $ show px
   return tex
       where 
         texify (w,h) = 

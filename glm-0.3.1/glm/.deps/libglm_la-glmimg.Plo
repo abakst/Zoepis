@@ -1,103 +1,138 @@
-libglm_la-glmimg.lo libglm_la-glmimg.o: glmimg.c ../config.h \
-  /usr/include/stdio.h /usr/include/_types.h /usr/include/sys/_types.h \
-  /usr/include/sys/cdefs.h /usr/include/machine/_types.h \
-  /usr/include/i386/_types.h /usr/include/secure/_stdio.h \
-  /usr/include/secure/_common.h /usr/include/stdlib.h \
-  /usr/include/Availability.h /usr/include/AvailabilityInternal.h \
-  /usr/include/sys/wait.h /usr/include/sys/signal.h \
-  /usr/include/sys/appleapiopts.h /usr/include/machine/signal.h \
-  /usr/include/i386/signal.h /usr/include/i386/_structs.h \
-  /usr/include/sys/_structs.h /usr/include/machine/_structs.h \
-  /usr/include/mach/i386/_structs.h /usr/include/sys/resource.h \
-  /usr/include/machine/endian.h /usr/include/i386/endian.h \
-  /usr/include/sys/_endian.h /usr/include/libkern/_OSByteOrder.h \
-  /usr/include/libkern/i386/_OSByteOrder.h /usr/include/alloca.h \
-  /usr/include/machine/types.h /usr/include/i386/types.h \
-  /usr/include/i386/_types.h /usr/include/string.h \
-  /usr/include/secure/_string.h /usr/include/assert.h /usr/include/math.h \
-  /usr/include/architecture/i386/math.h \
-  /System/Library/Frameworks/OpenGL.framework/Headers/gl.h \
-  /System/Library/Frameworks/OpenGL.framework/Headers/glext.h glm.h \
-  /System/Library/Frameworks/OpenGL.framework/Headers/glu.h glmint.h
+libglm_la-glmimg.lo: glmimg.c ../config.h /usr/include/stdio.h \
+ /usr/include/features.h /usr/include/bits/predefs.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stddef.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
+ /usr/include/stdlib.h /usr/include/sys/types.h /usr/include/time.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/sys/select.h \
+ /usr/include/bits/select.h /usr/include/bits/sigset.h \
+ /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
+ /usr/include/bits/pthreadtypes.h /usr/include/alloca.h \
+ /usr/include/bits/stdlib.h /usr/include/string.h /usr/include/xlocale.h \
+ /usr/include/bits/string.h /usr/include/bits/string2.h \
+ /usr/include/bits/string3.h /usr/include/assert.h /usr/include/math.h \
+ /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h \
+ /usr/include/bits/huge_vall.h /usr/include/bits/inf.h \
+ /usr/include/bits/nan.h /usr/include/bits/mathdef.h \
+ /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h \
+ /usr/include/GL/gl.h /usr/include/GL/glext.h /usr/include/inttypes.h \
+ /usr/include/stdint.h /usr/include/bits/wchar.h glm.h \
+ /usr/include/GL/glu.h glmint.h
 
 ../config.h:
 
 /usr/include/stdio.h:
 
-/usr/include/_types.h:
+/usr/include/features.h:
 
-/usr/include/sys/_types.h:
+/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
-/usr/include/machine/_types.h:
+/usr/include/bits/wordsize.h:
 
-/usr/include/i386/_types.h:
+/usr/include/gnu/stubs.h:
 
-/usr/include/secure/_stdio.h:
+/usr/include/gnu/stubs-64.h:
 
-/usr/include/secure/_common.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stddef.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stdarg.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:
 
 /usr/include/stdlib.h:
 
-/usr/include/Availability.h:
+/usr/include/sys/types.h:
 
-/usr/include/AvailabilityInternal.h:
+/usr/include/time.h:
 
-/usr/include/sys/wait.h:
+/usr/include/endian.h:
 
-/usr/include/sys/signal.h:
+/usr/include/bits/endian.h:
 
-/usr/include/sys/appleapiopts.h:
+/usr/include/bits/byteswap.h:
 
-/usr/include/machine/signal.h:
+/usr/include/sys/select.h:
 
-/usr/include/i386/signal.h:
+/usr/include/bits/select.h:
 
-/usr/include/i386/_structs.h:
+/usr/include/bits/sigset.h:
 
-/usr/include/sys/_structs.h:
+/usr/include/bits/time.h:
 
-/usr/include/machine/_structs.h:
+/usr/include/sys/sysmacros.h:
 
-/usr/include/mach/i386/_structs.h:
-
-/usr/include/sys/resource.h:
-
-/usr/include/machine/endian.h:
-
-/usr/include/i386/endian.h:
-
-/usr/include/sys/_endian.h:
-
-/usr/include/libkern/_OSByteOrder.h:
-
-/usr/include/libkern/i386/_OSByteOrder.h:
+/usr/include/bits/pthreadtypes.h:
 
 /usr/include/alloca.h:
 
-/usr/include/machine/types.h:
-
-/usr/include/i386/types.h:
-
-/usr/include/i386/_types.h:
+/usr/include/bits/stdlib.h:
 
 /usr/include/string.h:
 
-/usr/include/secure/_string.h:
+/usr/include/xlocale.h:
+
+/usr/include/bits/string.h:
+
+/usr/include/bits/string2.h:
+
+/usr/include/bits/string3.h:
 
 /usr/include/assert.h:
 
 /usr/include/math.h:
 
-/usr/include/architecture/i386/math.h:
+/usr/include/bits/huge_val.h:
 
-/System/Library/Frameworks/OpenGL.framework/Headers/gl.h:
+/usr/include/bits/huge_valf.h:
 
-/System/Library/Frameworks/OpenGL.framework/Headers/glext.h:
+/usr/include/bits/huge_vall.h:
+
+/usr/include/bits/inf.h:
+
+/usr/include/bits/nan.h:
+
+/usr/include/bits/mathdef.h:
+
+/usr/include/bits/mathcalls.h:
+
+/usr/include/bits/mathinline.h:
+
+/usr/include/GL/gl.h:
+
+/usr/include/GL/glext.h:
+
+/usr/include/inttypes.h:
+
+/usr/include/stdint.h:
+
+/usr/include/bits/wchar.h:
 
 glm.h:
 
-/System/Library/Frameworks/OpenGL.framework/Headers/glu.h:
+/usr/include/GL/glu.h:
 
 glmint.h:

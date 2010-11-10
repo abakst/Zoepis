@@ -34,9 +34,9 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = i686-apple-darwin10.4.0
-host_triplet = i686-apple-darwin10.4.0
-target_triplet = i686-apple-darwin10.4.0
+build_triplet = x86_64-unknown-linux-gnu
+host_triplet = x86_64-unknown-linux-gnu
+target_triplet = x86_64-unknown-linux-gnu
 noinst_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 subdir = examples
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -54,8 +54,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-#am__EXEEXT_1 = smooth$(EXEEXT) glutobj$(EXEEXT) \
-#	game_glutobj$(EXEEXT)
+am__EXEEXT_1 = smooth$(EXEEXT) glutobj$(EXEEXT) \
+	game_glutobj$(EXEEXT)
 #am__EXEEXT_2 = gluiobj$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 am_game_glutobj_OBJECTS = game_glutobj-game_glutobj.$(OBJEXT)
@@ -98,31 +98,31 @@ DIST_SOURCES = $(game_glutobj_SOURCES) $(gluiobj_SOURCES) \
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /Users/bakster/Projects/Haskell/Games2/Zoepis/glm-0.3.1/missing --run aclocal-1.9
+ACLOCAL = ${SHELL} /home/abakst/Zoepis/glm-0.3.1/missing --run aclocal-1.9
 AMDEP_FALSE = #
 AMDEP_TRUE = 
-AMTAR = ${SHELL} /Users/bakster/Projects/Haskell/Games2/Zoepis/glm-0.3.1/missing --run tar
+AMTAR = ${SHELL} /home/abakst/Zoepis/glm-0.3.1/missing --run tar
 AR = ar
-AUTOCONF = ${SHELL} /Users/bakster/Projects/Haskell/Games2/Zoepis/glm-0.3.1/missing --run autoconf
-AUTOHEADER = ${SHELL} /Users/bakster/Projects/Haskell/Games2/Zoepis/glm-0.3.1/missing --run autoheader
-AUTOMAKE = ${SHELL} /Users/bakster/Projects/Haskell/Games2/Zoepis/glm-0.3.1/missing --run automake-1.9
+AUTOCONF = ${SHELL} /home/abakst/Zoepis/glm-0.3.1/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/abakst/Zoepis/glm-0.3.1/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/abakst/Zoepis/glm-0.3.1/missing --run automake-1.9
 AWK = gawk
-CC = gcc -arch i386
+CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
-CPP = gcc -arch i386 -E
+CPP = gcc -E
 CPPFLAGS = 
-CXX = g++ -arch i386
-CXXCPP = g++ -arch i386 -E
-CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2
+CXX = g++
+CXXCPP = 
+CXXDEPMODE = depmode=none
+CXXFLAGS = 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
 DEVILLIBS = 
-ECHO = /bin/echo
-ECHO_C = \c
-ECHO_N = 
+ECHO = echo
+ECHO_C = 
+ECHO_N = -n
 ECHO_T = 
 EGREP = grep -E
 EXEEXT = 
@@ -131,17 +131,17 @@ FFLAGS =
 GLUI_CFLAGS = 
 GLUI_LIBS = 
 GLUT_CFLAGS = 
-GLUT_LIBS = 
+GLUT_LIBS = -lglut  -lSM -lICE -lXmu -lXi  
 GLU_CFLAGS = 
 GLU_LIBS = 
-GL_CFLAGS = 
-GL_LIBS = 
+GL_CFLAGS = -pthread
+GL_LIBS = -lGL  -lm
 HAVE_GIF_FALSE = 
 HAVE_GIF_TRUE = #
 HAVE_GLUI_FALSE = 
 HAVE_GLUI_TRUE = #
-HAVE_GLUT_FALSE = 
-HAVE_GLUT_TRUE = #
+HAVE_GLUT_FALSE = #
+HAVE_GLUT_TRUE = 
 HAVE_SDL_IMAGE_FALSE = 
 HAVE_SDL_IMAGE_TRUE = #
 HAVE_TIFF_FALSE = 
@@ -157,7 +157,7 @@ LIBS =
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /Users/bakster/Projects/Haskell/Games2/Zoepis/glm-0.3.1/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/abakst/Zoepis/glm-0.3.1/missing --run makeinfo
 OBJEXT = o
 PACKAGE = glm
 PACKAGE_BUGREPORT = 
@@ -166,14 +166,14 @@ PACKAGE_STRING = glm 0.3.1
 PACKAGE_TARNAME = glm
 PACKAGE_VERSION = 0.3.1
 PATH_SEPARATOR = :
-PTHREAD_CC = gcc -arch i386
-PTHREAD_CFLAGS = 
+PTHREAD_CC = gcc
+PTHREAD_CFLAGS = -pthread
 PTHREAD_LIBS = 
 RANLIB = ranlib
 SDL_IMAGELIBS = 
-SED = /usr/bin/sed
+SED = /bin/sed
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = strip
 SUPPORT_LIBS =  -ljpeg -lpng -lz
 VERSION = 0.3.1
@@ -181,43 +181,43 @@ WARN_CFLAGS = -Wall -Wmissing-prototypes
 X_CFLAGS = 
 X_EXTRA_LIBS = 
 X_LIBS = 
-X_PRE_LIBS = 
+X_PRE_LIBS =  -lSM -lICE
 ac_ct_AR = ar
-ac_ct_CC = gcc -arch i386
-ac_ct_CXX = 
+ac_ct_CC = gcc
+ac_ct_CXX = g++
 ac_ct_F77 = 
 ac_ct_RANLIB = ranlib
 ac_ct_STRIP = strip
 am__fastdepCC_FALSE = #
 am__fastdepCC_TRUE = 
-am__fastdepCXX_FALSE = #
-am__fastdepCXX_TRUE = 
+am__fastdepCXX_FALSE = 
+am__fastdepCXX_TRUE = #
 am__include = include
 am__leading_dot = .
 am__quote = 
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = ${exec_prefix}/bin
-build = i686-apple-darwin10.4.0
+build = x86_64-unknown-linux-gnu
 build_alias = 
-build_cpu = i686
-build_os = darwin10.4.0
-build_vendor = apple
+build_cpu = x86_64
+build_os = linux-gnu
+build_vendor = unknown
 datadir = ${prefix}/share
 exec_prefix = ${prefix}
-host = i686-apple-darwin10.4.0
+host = x86_64-unknown-linux-gnu
 host_alias = 
-host_cpu = i686
-host_os = darwin10.4.0
-host_vendor = apple
+host_cpu = x86_64
+host_os = linux-gnu
+host_vendor = unknown
 includedir = ${prefix}/include
 infodir = ${prefix}/info
-install_sh = /Users/bakster/Projects/Haskell/Games2/Zoepis/glm-0.3.1/install-sh
+install_sh = /home/abakst/Zoepis/glm-0.3.1/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localstatedir = ${prefix}/var
 mandir = ${prefix}/man
-mkdir_p = $(install_sh) -d
+mkdir_p = mkdir -p --
 oldincludedir = /usr/include
 prefix = /usr/local
 program_transform_name = s,x,x,
@@ -225,13 +225,13 @@ sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 sim_ac_simage_configcmd = 
 sysconfdir = ${prefix}/etc
-target = i686-apple-darwin10.4.0
+target = x86_64-unknown-linux-gnu
 target_alias = 
-target_cpu = i686
-target_os = darwin10.4.0
-target_vendor = apple
+target_cpu = x86_64
+target_os = linux-gnu
+target_vendor = unknown
 AM_CFLAGS = $(WARN_CFLAGS)
-#GLUTPROGS = smooth glutobj game_glutobj
+GLUTPROGS = smooth glutobj game_glutobj
 #GLUIPROGS = gluiobj
 smooth_CFLAGS = -I$(top_srcdir)/glm $(GLUT_CFLAGS)
 smooth_SOURCES = dirent32.h gltb.c gltb.h gltx.c gltx.h smooth.c trackball.c trackball.h
@@ -418,39 +418,39 @@ smooth-trackball.obj: trackball.c
 #	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(smooth_CFLAGS) $(CFLAGS) -c -o smooth-trackball.obj `if test -f 'trackball.c'; then $(CYGPATH_W) 'trackball.c'; else $(CYGPATH_W) '$(srcdir)/trackball.c'; fi`
 
 .cpp.o:
-	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
-	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-#	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXXCOMPILE) -c -o $@ $<
+#	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+#	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+	source='$<' object='$@' libtool=no \
+	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+	$(CXXCOMPILE) -c -o $@ $<
 
 .cpp.obj:
-	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
-	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-#	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+#	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
+#	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+	source='$<' object='$@' libtool=no \
+	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .cpp.lo:
-	if $(LTCXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
-	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Plo"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-#	source='$<' object='$@' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(LTCXXCOMPILE) -c -o $@ $<
+#	if $(LTCXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+#	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Plo"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+	source='$<' object='$@' libtool=yes \
+	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+	$(LTCXXCOMPILE) -c -o $@ $<
 
 gluiobj-gluiobj.o: gluiobj.cpp
-	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gluiobj_CXXFLAGS) $(CXXFLAGS) -MT gluiobj-gluiobj.o -MD -MP -MF "$(DEPDIR)/gluiobj-gluiobj.Tpo" -c -o gluiobj-gluiobj.o `test -f 'gluiobj.cpp' || echo '$(srcdir)/'`gluiobj.cpp; \
-	then mv -f "$(DEPDIR)/gluiobj-gluiobj.Tpo" "$(DEPDIR)/gluiobj-gluiobj.Po"; else rm -f "$(DEPDIR)/gluiobj-gluiobj.Tpo"; exit 1; fi
-#	source='gluiobj.cpp' object='gluiobj-gluiobj.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gluiobj_CXXFLAGS) $(CXXFLAGS) -c -o gluiobj-gluiobj.o `test -f 'gluiobj.cpp' || echo '$(srcdir)/'`gluiobj.cpp
+#	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gluiobj_CXXFLAGS) $(CXXFLAGS) -MT gluiobj-gluiobj.o -MD -MP -MF "$(DEPDIR)/gluiobj-gluiobj.Tpo" -c -o gluiobj-gluiobj.o `test -f 'gluiobj.cpp' || echo '$(srcdir)/'`gluiobj.cpp; \
+#	then mv -f "$(DEPDIR)/gluiobj-gluiobj.Tpo" "$(DEPDIR)/gluiobj-gluiobj.Po"; else rm -f "$(DEPDIR)/gluiobj-gluiobj.Tpo"; exit 1; fi
+	source='gluiobj.cpp' object='gluiobj-gluiobj.o' libtool=no \
+	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gluiobj_CXXFLAGS) $(CXXFLAGS) -c -o gluiobj-gluiobj.o `test -f 'gluiobj.cpp' || echo '$(srcdir)/'`gluiobj.cpp
 
 gluiobj-gluiobj.obj: gluiobj.cpp
-	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gluiobj_CXXFLAGS) $(CXXFLAGS) -MT gluiobj-gluiobj.obj -MD -MP -MF "$(DEPDIR)/gluiobj-gluiobj.Tpo" -c -o gluiobj-gluiobj.obj `if test -f 'gluiobj.cpp'; then $(CYGPATH_W) 'gluiobj.cpp'; else $(CYGPATH_W) '$(srcdir)/gluiobj.cpp'; fi`; \
-	then mv -f "$(DEPDIR)/gluiobj-gluiobj.Tpo" "$(DEPDIR)/gluiobj-gluiobj.Po"; else rm -f "$(DEPDIR)/gluiobj-gluiobj.Tpo"; exit 1; fi
-#	source='gluiobj.cpp' object='gluiobj-gluiobj.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gluiobj_CXXFLAGS) $(CXXFLAGS) -c -o gluiobj-gluiobj.obj `if test -f 'gluiobj.cpp'; then $(CYGPATH_W) 'gluiobj.cpp'; else $(CYGPATH_W) '$(srcdir)/gluiobj.cpp'; fi`
+#	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gluiobj_CXXFLAGS) $(CXXFLAGS) -MT gluiobj-gluiobj.obj -MD -MP -MF "$(DEPDIR)/gluiobj-gluiobj.Tpo" -c -o gluiobj-gluiobj.obj `if test -f 'gluiobj.cpp'; then $(CYGPATH_W) 'gluiobj.cpp'; else $(CYGPATH_W) '$(srcdir)/gluiobj.cpp'; fi`; \
+#	then mv -f "$(DEPDIR)/gluiobj-gluiobj.Tpo" "$(DEPDIR)/gluiobj-gluiobj.Po"; else rm -f "$(DEPDIR)/gluiobj-gluiobj.Tpo"; exit 1; fi
+	source='gluiobj.cpp' object='gluiobj-gluiobj.obj' libtool=no \
+	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gluiobj_CXXFLAGS) $(CXXFLAGS) -c -o gluiobj-gluiobj.obj `if test -f 'gluiobj.cpp'; then $(CYGPATH_W) 'gluiobj.cpp'; else $(CYGPATH_W) '$(srcdir)/gluiobj.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

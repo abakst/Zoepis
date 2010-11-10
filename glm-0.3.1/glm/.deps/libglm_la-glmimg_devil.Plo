@@ -1,17 +1,40 @@
-libglm_la-glmimg_devil.lo libglm_la-glmimg_devil.o: glmimg_devil.c \
-  ../config.h glm.h \
-  /System/Library/Frameworks/OpenGL.framework/Headers/gl.h \
-  /System/Library/Frameworks/OpenGL.framework/Headers/glext.h \
-  /System/Library/Frameworks/OpenGL.framework/Headers/glu.h glmint.h
+libglm_la-glmimg_devil.lo: glmimg_devil.c ../config.h glm.h \
+ /usr/include/GL/gl.h /usr/include/GL/glext.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stddef.h \
+ /usr/include/inttypes.h /usr/include/features.h \
+ /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h /usr/include/stdint.h \
+ /usr/include/bits/wchar.h /usr/include/GL/glu.h glmint.h
 
 ../config.h:
 
 glm.h:
 
-/System/Library/Frameworks/OpenGL.framework/Headers/gl.h:
+/usr/include/GL/gl.h:
 
-/System/Library/Frameworks/OpenGL.framework/Headers/glext.h:
+/usr/include/GL/glext.h:
 
-/System/Library/Frameworks/OpenGL.framework/Headers/glu.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stddef.h:
+
+/usr/include/inttypes.h:
+
+/usr/include/features.h:
+
+/usr/include/bits/predefs.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
+
+/usr/include/stdint.h:
+
+/usr/include/bits/wchar.h:
+
+/usr/include/GL/glu.h:
 
 glmint.h:

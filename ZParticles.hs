@@ -6,7 +6,10 @@ import ZGraphics
 import Data.Map
 import Unsafe.Coerce
 import Foreign.Marshal.Array
-import Graphics.Rendering.OpenGL.Raw
+import Graphics.Rendering.OpenGL.Raw (gl_POINT_SPRITE, 
+				      gl_COORD_REPLACE,
+                                      gl_POINT_DISTANCE_ATTENUATION,
+				      glTexEnvi, glPointParameterfv)
 import Graphics.Rendering.OpenGL.GL
 
 toGL :: Float -> GLfloat
