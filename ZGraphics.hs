@@ -71,7 +71,7 @@ zInitialize :: ZRenderGL scene =>
                IO (ZGraphicsGL scene, IO ())
 zInitialize name width height loader startScene exit =
     do sceneVar <- zNewChan startScene
-       eventVar <- zNewChan []
+       eventVar <- zNewEmptyChan
        return (GraphicsGL {
                     gProgname = name
                   , gWidth = width
@@ -93,6 +93,7 @@ zInitialize name width height loader startScene exit =
             initialDisplayMode $= [SingleBuffered, RGBMode, WithDepthBuffer]
             initialWindowSize $= Size width height
             createWindow name
+	    fullScreen
             res <- execStateT resloader zEmptyResourceList
             displayCallback $= display res sceneVar
             idleCallback $= (Just $ do x <- zIsEmpty exitVar
@@ -116,6 +117,7 @@ zInitialize name width height loader startScene exit =
             clearDepth $= 1.0
             normalize $= Enabled
             setupLights
+	    zPutChan eventVar []
             mainLoop
 
 setupLights = do 

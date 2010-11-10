@@ -90,7 +90,7 @@
 #define VERSION "0.3.1"
 
 /* Define to 1 if the X Window System is missing or not being used. */
-#define X_DISPLAY_MISSING 1
+/* #undef X_DISPLAY_MISSING */
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */

@@ -79,7 +79,8 @@ rotateShip s r = s { sOrient = rotateO r (sOrient s)
                    }
     where rotEngine (pe, o) = (pe, rotateO r o)
                  
-shipR = zLoadObject 0 "resources/GhoulOBJ.obj" True >> zLoadTexture 0 "resources/Part.jpg"
+shipR = do zLoadObject 0 "resources/GhoulOBJ.obj" True 
+           zLoadTexture 0 "resources/Part.jpg"
            
 newShip pos rot speed seed = mkShip $ Ship {
                                   sOrient = shipO

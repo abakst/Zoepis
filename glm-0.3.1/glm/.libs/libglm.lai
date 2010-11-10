@@ -14,7 +14,7 @@ library_names=''
 old_library='libglm.a'
 
 # Libraries that this one depends upon.
-dependency_libs=' /usr/local/lib/libjpeg.la /usr/local/lib/libpng.la -lz'
+dependency_libs=' -lGL -lm -lGLU /usr/lib/libjpeg.la -lpng -lz'
 
 # Version information for libglm.
 current=0
