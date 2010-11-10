@@ -99,8 +99,8 @@ mkShip :: Ship -> ExampleObject
 mkShip s = Object update render
     where
       transShip dt ship = moveShip ship (scale dt (shipVel ship))
-      (rot, rng) = zRunRand (randomRot 0.5 (sOrient s)) (sRand s)
-      stepShip sh dt = stepEngines $ transShip dt s -- $ rotateShip s rot
+      (rot, rng) = zRunRand (randomRot 0.8 (sOrient s)) (sRand s)
+      stepShip sh dt = stepEngines $ transShip dt $ rotateShip s rot
       update dt = mkShip $ (stepShip s dt) { sRand = rng }
       render = renderShip s
       
@@ -128,8 +128,8 @@ randomRot threshold orientation = do
   ; p <- zGetRandomR (0, 1.0::Float)
   ; if p <= threshold
     then do
-      theta <- zGetRandomR (0, 0.02)
-      let rot = rotation theta (oForward orientation + oUp orientation)
+      theta <- zGetRandomR (-0.02, 0.02)
+      let rot = rotation theta (oRight orientation + oUp orientation)
       return rot
     else return $ rotation 0 (vector3D (0,0,0))
   }
