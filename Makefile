@@ -3,11 +3,16 @@
 HC=ghc
 HCFLAG=--make -O2 -outputdir ./bin -funbox-strict-fields
 HLFLAG=-lglm -ljpeg -lpng -threaded
+
+ifeq ($(PROFILE),1)
+HCFLAG += -prof -auto-all
+endif
+
 DO=$(HC) $(HCFLAG) $(HLFLAG)
 
 .PHONY: basic_test
 basic_test:
-	$(DO) basic_test.hs -o basic_test -prof -auto-all
+	$(DO) basic_test.hs -o basic_test
 
 run_test: basic_test
 	./basic_test
