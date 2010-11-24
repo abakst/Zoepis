@@ -1,6 +1,6 @@
 module ZGraphics where
 
-import Control.Concurrent (yield)
+import Control.Concurrent (yield, forkOS)
 import Graphics.Rendering.OpenGL hiding (get)
 import Graphics.UI.GLUT hiding (get, LeftButton)
 import Data.Map
@@ -26,6 +26,14 @@ zEmptyResourceList = GraphicsResources {
                        gDisplayLists = empty
                      , gTextures = empty
                      }
+                     
+zRunWithGraphics startGr gr act = do
+  forkOS $ do
+    x <- zTakeChan (gEventChannel gr)
+    zPutChan (gEventChannel gr) []
+    act
+  startGr
+  	                       -- gameloop gs myGame             
 
 zUpdateGraphics :: IO ()
 zUpdateGraphics = postRedisplay Nothing  >> yield

@@ -1,0 +1,59 @@
+newmtl cube_f
+        Ns 0.000000
+        Ni 1.500000
+        d 1.000000
+        Tr 0.000000
+        Tf 1.000000 1.000000 1.000000
+        illum 2
+        Ka 1 1 1
+	map_Kd skybox_pz.jpg
+
+newmtl cube_r
+        Ns 0.000000
+        Ni 1.500000
+        d 1.000000
+        Tr 0.000000
+        Tf 1.000000 1.000000 1.000000
+        illum 2
+        Ka 1 1 1
+        map_Kd skybox_px.jpg
+
+newmtl cube_l
+        Ns 0.000000
+        Ni 1.500000
+        d 1.000000
+        Tr 0.000000
+        Tf 1.000000 1.000000 1.000000
+        illum 2
+        Ka 1 1 1
+        map_Kd skybox_nx.jpg
+
+newmtl cube_b
+        Ns 0.000000
+        Ni 1.500000
+        d 1.000000
+        Tr 0.000000
+        Tf 1.000000 1.000000 1.000000
+        illum 2
+        Ka 1 1 1
+        map_Kd skybox_nz.jpg
+
+newmtl cube_u
+        Ns 0.000000
+        Ni 1.500000
+        d 1.000000
+        Tr 0.000000
+        Tf 1.000000 1.000000 1.000000
+        illum 2
+        Ka 1 1 1
+        map_Kd skybox_py.jpg
+
+newmtl cube_d
+        Ns 0.000000
+        Ni 1.500000
+        d 1.000000
+        Tr 0.000000
+        Tf 1.000000 1.000000 1.000000
+        illum 2
+        Ka 1 1 1
+        map_Kd skybox_ny.jpg

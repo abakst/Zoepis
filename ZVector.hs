@@ -3,6 +3,7 @@ module ZVector where
 import Data.SG hiding (origin)
 import Control.Applicative
 import Debug.Trace
+import Unsafe.Coerce
 import Graphics.Rendering.OpenGL
 
 debug x = trace (show x) x
@@ -70,6 +71,7 @@ axisOfRot = unitVector . vectorq
 angleOfRot :: Floating a => Quaternion a -> a
 angleOfRot = (2*) . acos . real
 
+noRotation :: (Ord a, Floating a) => Quaternion a
 noRotation = rotation 0 (vector3D (0,0,0))
 
 rotation :: (Floating a, Ord a) => a -> Vector3D a -> Quaternion a
@@ -155,3 +157,8 @@ instance IsoVecTo Vector3 where
 instance IsoVecTo Vertex3 where
     fromVec3D v = Vertex3 (vecX v) (vecY v) (vecZ v)    
   
+toGL :: Float -> GLfloat
+toGL = unsafeCoerce
+
+toGLd :: Double -> GLdouble
+toGLd = unsafeCoerce

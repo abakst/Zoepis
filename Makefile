@@ -1,7 +1,7 @@
 # Makefile for thing.
 
 HC=ghc
-HCFLAG=--make -O2 -outputdir ./bin -funbox-strict-fields
+HCFLAG=--make -O3 -outputdir ./bin -funbox-strict-fields
 HLFLAG=-lglm -ljpeg -lpng -threaded
 
 ifeq ($(PROFILE),1)

@@ -93,15 +93,15 @@ newShip pos rot speed seed = mkShip $ Ship {
           eOff = scale 0.02 (oUp shipO)
           eRight = scale 0.35 (oRight shipO)
           eBack  = scale (-0.80) (oForward shipO)
-          eL = (newEngine 25, offsetO (eOff - eRight + eBack) shipO)
-          eR = (newEngine 25, offsetO (eOff + eRight + eBack) shipO)
+          eL = (newEngine 15, offsetO (eOff - eRight + eBack) shipO)
+          eR = (newEngine 15, offsetO (eOff + eRight + eBack) shipO)
            
 mkShip :: Ship -> ExampleObject           
 mkShip s = Object update render
     where
       transShip dt ship = moveShip ship (scale dt (shipVel ship))
       (rot, rng) = zRunRand (randomRot 0.8 (sOrient s)) (sRand s)
-      stepShip sh dt = stepEngines $ transShip dt $ rotateShip s rot
+      stepShip sh dt = stepEngines $ transShip dt s -- $ rotateShip s rot
       update dt = mkShip $ (stepShip s dt) { sRand = rng }
       render = renderShip s
       
@@ -121,7 +121,7 @@ stepEngines ship = ship { sEngineL = stepEngine $ sEngineL ship
           
 newEngine n = replicate n $ ZDeadParticle          
           
-engineParticle l o = particle l (0.1, 0.0, 0.9) (oPos o) (oForward o) 0
+engineParticle l o = zParticle l (1.0, 0.6, 0.1) (oPos o) (oForward o) 0
       
 randomRot :: Float -> Orientation -> ZRandom (Quaternion (Float))
 randomRot threshold orientation = do
@@ -139,8 +139,8 @@ randomRot threshold orientation = do
 renderShip :: Ship -> [ZSceneObject]
 renderShip s = 
   [ZModel zNoScale (zRot $ rotate `mulq` reOrient) (zTrans pos) 0
-  ,ZParticles peR
-  ,ZParticles peL]
+  ,ZParticles 50 0 peR
+  ,ZParticles 50 0 peL]
     where up = oUp $ sOrient s
           pos = oPos $ sOrient s
           peL = fst . sEngineL $ s

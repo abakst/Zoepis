@@ -12,9 +12,6 @@ import Graphics.Rendering.OpenGL.Raw (gl_POINT_SPRITE,
 				      glTexEnvi, glPointParameterfv)
 import Graphics.Rendering.OpenGL.GL
 
-toGL :: Float -> GLfloat
-toGL = unsafeCoerce
-
 data ZParticle = ZDeadParticle
                | ZParticle { 
                    pLife :: GLfloat
@@ -23,8 +20,11 @@ data ZParticle = ZDeadParticle
                  , pDir  :: Vector3D GLfloat
                  , pSpeed :: GLfloat
                  }
-                 
-particle l (r,g,b) p d s =
+
+zParticle :: Float -> (Float, Float, Float) ->
+             Point3D Float -> Vector3D Float -> Float ->
+             ZParticle
+zParticle l (r,g,b) p d s =
     ZParticle {
   pLife = toGL l
 , pColor = (toGL r, toGL g, toGL b)
@@ -33,15 +33,16 @@ particle l (r,g,b) p d s =
 , pSpeed = toGL s
 }
                  
-renderParticles res ps = do
+zRenderParticles :: ZGraphicsResources -> Float -> Int -> [ZParticle] -> IO ()
+zRenderParticles res size tex ps = do
   quadratic <- newArray [0, 0, 0.1]
   blend $= Enabled
   cullFace $= Nothing
   blendFunc $= (SrcAlpha, One)
   pointSprite $= Enabled
-  pointSize $= 25
+  pointSize $= toGL size
   depthMask $= Disabled
-  textureBinding Texture2D $= Just (gTextures res ! 0)
+  textureBinding Texture2D $= Just (gTextures res ! tex)
   texture Texture2D $= Enabled
   glTexEnvi gl_POINT_SPRITE gl_COORD_REPLACE 1
   glPointParameterfv gl_POINT_DISTANCE_ATTENUATION quadratic
@@ -57,6 +58,5 @@ renderParticles res ps = do
 drawParticle _ ZDeadParticle = return ()        
 drawParticle _ p = do    
     let (r,g,b) = pColor p
---    pointSize $= (pLife p) * 25
     color $ Color4 r g b (pLife p)
     vertex (fromVec3D $ pPos p :: Vertex3 GLfloat)

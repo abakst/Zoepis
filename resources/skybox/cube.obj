@@ -1,0 +1,38 @@
+mtllib cube.mtl
+v  1 -1 -1
+v  1 -1  1
+v -1 -1  1
+v -1 -1 -1
+v  1  1 -1
+v  1  1  1
+v -1  1  1
+v -1  1 -1
+vt 0 0
+vt 1 0
+vt 1 1
+vt 0 1
+vn 1 0 0
+vn -1 0 0
+vn 0 1 0
+vn 0 -1 0
+vn 0 0 1
+vn 0 0 -1
+g front
+usemtl cube_f
+f 2/1/6 3/2/6 7/3/6 6/4/6
+g right
+usemtl cube_r
+f 3/1/1 4/2/1 8/3/1 7/4/1
+g left
+usemtl cube_l
+f 1/1/2 2/2/2 6/3/2 5/4/2
+g back
+usemtl cube_b
+f 4/1/5 1/2/5 5/3/5 8/4/5
+g top
+usemtl cube_u
+f 6/1/4 7/2/4 8/3/4 5/4/4
+g bottom
+usemtl cube_d
+f 1/1/3 4/2/3 3/3/3 2/4/3
+
