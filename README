@@ -1,7 +1,24 @@
-Installation/Compilation
-========================
+How to build and run Zoepis
+===========================
+
+Installation:
 For now, the only way to build this is to make sure that libglm, libpng, and libjpeg are installed on your system.
 
-Then, run `make basic_test,' and you should either be all set.
+First install libjpg and libpng. These can be found at:
+http://sourceforge.net/projects/libjpeg/
+http://www.libpng.org/
 
+Then install libglm:
+http://devernay.free.fr/hacks/glm/
+
+Once these libraries are installed, run `make basic_test'. This will either compile all the haskell files successfully, or not ;). This will produce an executable, basic_test, which is all I have to show for myself right now.
+
+Running:
+All there is to run now is a file, basic_test.
+
+$ ./basic_test
+
+You can include any of the modules defined in the Z*hs files and make your own project, however! That is fun.
+
+================
 When there is a finished product, I might put effort into developing a .cabal file that will do all this for you.
