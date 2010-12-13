@@ -1,12 +1,6 @@
 module ExampleObject(DT, ExampleObject(..), newShip, shipR) where
 
-import ZScene
---import ZParticle
-import ZGraphics
-import ZVector
-import ZRandom
-import ZParticles
-
+import Zoepis
 import Control.Monad
 
 type DT = Float

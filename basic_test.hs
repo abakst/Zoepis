@@ -1,18 +1,8 @@
 module Main where
 
-import ZScene
-import ZObject
-import ZGraphics
-import ZVector
-import ZGame
-import ZChannel
-import ZEventMessage
-import ZCamera
-import ZKeys
-import Texture
-
+import Zoepis
+  
 import ExampleObject    
-
 import Unsafe.Coerce
 import Control.Monad.State
 import Control.Concurrent
