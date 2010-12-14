@@ -24,3 +24,10 @@ zRotateCamera theta phi root = root { zSceneCamera = newCamera }
           rotPhi   = rotation dPhi rightVec
           newCamera = (c, c + rotateVector rotPhi dirTheta, u)
           
+zOrbitCamera :: Double -> ZSceneRoot -> ZSceneRoot
+zOrbitCamera theta root = root { zSceneCamera = newCamera }
+  where (c,f,u) = zSceneCamera root
+        dTheta = realToFrac theta
+        dir    = c - f
+        rot    = rotation dTheta u
+        newCamera = (f + rotateVector rot dir, f, u)
