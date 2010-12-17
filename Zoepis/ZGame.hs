@@ -13,7 +13,7 @@ import System.CPUTime
 -- Time --
 
 zTickPrec = 100000000
-zGetTime  = getCPUTime >>= (return . (`div` zTickPrec))
+zGetTime  = fmap (`div` zTickPrec) getCPUTime
 
 -- Some handy classes to abstract common functionality --
 class KeysEnabled a where            
@@ -43,9 +43,9 @@ zGameLoopStep st loop = st `seq` execStateT loop st
 zEveryNTicks :: Timed st => Integer -> ZGameLoop st a -> ZGameLoop st ()
 zEveryNTicks n act = do
   t0 <- gets tGetTicks
-  t1 <- lift $ zGetTime
+  t1 <- lift zGetTime
   when (t1 - t0 > n) $ loop t1 (t1 - t0)
-  where loop t dif = if (dif > n)
+  where loop t dif = if dif > n
                      then act >> loop t (dif - n) 
                      else modify $ flip tUpdateTicks t
                                           

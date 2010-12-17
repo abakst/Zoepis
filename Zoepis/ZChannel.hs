@@ -5,9 +5,9 @@ import Control.Concurrent.MVar
 --- Channels are just wrappers around MVars ---                    
 newtype ZChannel a = ZChannel (MVar a)
 
-zNewChan a = newMVar a >>= (return . ZChannel)
+zNewChan a = fmap ZChannel (newMVar a)
 
-zNewEmptyChan = newEmptyMVar >>= (return . ZChannel)
+zNewEmptyChan = fmap ZChannel newEmptyMVar
     
 zPeekChan (ZChannel c) = readMVar c
                          

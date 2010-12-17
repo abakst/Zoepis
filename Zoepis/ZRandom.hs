@@ -52,6 +52,6 @@ fromGen gen num = ZRandGenC {
           rvals = listArray (1,num) vals
           
 instance RandomGen ZRandGenC where
-    next g = (zrcRs g ! zrcI g, g { zrcI = (zrcI g + 1) `mod` (zrcNum g) + 1})
+    next g = (zrcRs g ! zrcI g, g { zrcI = (zrcI g + 1) `mod` zrcNum g + 1})
     split g = let (g1, g2) = split (zrcRNG g)
               in (fromGen g1 (zrcNum g), fromGen g2 (zrcNum g))

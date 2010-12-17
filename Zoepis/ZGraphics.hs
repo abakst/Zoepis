@@ -116,7 +116,7 @@ zInitialize name width height loader startScene exit =
             res <- execStateT resloader zEmptyResourceList
             displayCallback $= display res sceneVar
             idleCallback $= (Just $ do x <- zIsEmpty exitVar
-                                       when (not x) exitSuccess
+                                       unless x exitSuccess
                                        yield)
             motionCallback  $= Just (mouseCallback eventVar)
             keyboardMouseCallback $= Just (buttonCallback eventVar)
