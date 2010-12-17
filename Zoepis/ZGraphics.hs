@@ -1,4 +1,6 @@
+{-# LANGUAGE MultiParamTypeClasses,FunctionalDependencies #-}
 module Zoepis.ZGraphics where
+
 
 import Zoepis.ZObject
 import Zoepis.ZChannel
@@ -67,6 +69,17 @@ data ZGraphicsGL a = GraphicsGL {
     , gEventChannel :: !(ZChannel [ZEvent])
     }
                      
+class GraphicsEnabled a b | a -> b where                     
+  geGraphics :: a -> ZGraphicsGL b                      
+    
+zModifyScene :: GraphicsEnabled a scene => a -> (scene -> scene) -> IO ()
+zModifyScene ge f = do
+  let chan = gSceneChannel . geGraphics $ ge
+  root <- zPeekChan chan
+  zSwapChan chan (f root)
+  zUpdateGraphics
+  
+  
 zInitialize :: ZRenderGL scene =>
                String ->
                GLsizei ->

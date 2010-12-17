@@ -21,5 +21,4 @@ zModifyChan_ (ZChannel c) = modifyMVar_ c
 
 zSwapChan (ZChannel c) = swapMVar c
 
-zIsEmpty (ZChannel c) = isEmptyMVar c                         
-
+zIsEmpty (ZChannel c) = isEmptyMVar c

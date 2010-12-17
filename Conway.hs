@@ -1,8 +1,9 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
 module Main where
 import Zoepis
 import Data.Array
 import Control.Monad.State
-import Graphics.Rendering.OpenGL
+import Graphics.Rendering.OpenGL hiding (get)
 import Unsafe.Coerce
 --import Graphics.Rendering.OpenGL.GLU
 
@@ -15,9 +16,23 @@ data Conway = ConwayState {
   , stKeys     :: KeyVector
   }
               
+instance KeysEnabled Conway where
+  keKV = stKeys
+  keSetKeys c kv = c { stKeys = kv }
+  
+instance Timed Conway where  
+  tGetTicks = stLastTick
+  tUpdateTicks c t = c { stLastTick = t }
+              
+instance EventSub Conway where                     
+  esEventChannel = gEventChannel . stGraphics
+  
+instance GraphicsEnabled Conway ZSceneRoot where
+  geGraphics = stGraphics
+                     
 type ConwayScene = ZSceneRoot              
 startScene = ZSceneRoot Nothing (10*zAxis + 5*xAxis, origin, yAxis) [ZEmptyScene]
-conwayTitle = "Conway's Game of Life"              
+conwayTitle = "Conway's Game of Life - Press 'Q' to quit"              
 width = 800
 height = 600
 
@@ -73,41 +88,21 @@ main = do
                                                    ]
                        , stKeys = KV 0
                        }
-  zRunWithGraphics start gr (gameloop gs conwayGame)
-    where gameloop st lp = do
-            st' <- zGameLoopStep st lp
-            gameloop st' lp
+  zRunWithGraphics start gr $ zGameLoop gs conwayGame
             
+conwayGame :: ZGameLoop Conway ()
 conwayGame = do
-  eventHandler
+  zHandleEvents $ zEmptyHandler { zKeyPress = keyDown
+                                , zKeyRelease = keyUp
+                                }
   moveCamera
-  everyNTicks 2000 $ do
-    grid <- gets stCells
-    chan <- gets stSceneChannel
+  zEveryNTicks 1500 $ do
+    s <- get
+    let grid = stCells s
+    let chan = stSceneChannel s
     modify (\s -> s { stCells = stepConway grid })
-    lift $ do
-      root <- zPeekChan chan
-      zSwapChan chan $ root { zSceneObjects = renderConway grid }
-      zUpdateGraphics
-            
-everyNTicks :: Integer -> ZGameLoop Conway a -> ZGameLoop Conway ()
-everyNTicks n a = do
-  t0 <- gets stLastTick
-  t1 <- lift $ zGetTime
-  loop t1 (t1 - t0)
-  where loop t1 dif = if (dif > n)
-                      then a >> loop t1 (dif - n)
-                      else modify (\s -> s { stLastTick = t1 - dif })  
-                           
-eventHandler :: ZGameLoop Conway ()
-eventHandler = do
-  graphics <- gets stGraphics
-  let channel = gEventChannel graphics
-  zWithEventChannel channel $ zEmptyHandler {
-      zKeyPress = keyDown
-    , zKeyRelease = keyUp
-    }
-    
+    lift $ zModifyScene s $ \r -> r {zSceneObjects = renderConway grid}
+                                         
 endGame = gets stGameOver >>= (lift . flip zPutChan True)
 
 keyDown :: ZHandlerFunc Char Conway
@@ -135,4 +130,4 @@ orbitCamera theta = do
   chan <- gets stSceneChannel
   lift $ do
     root <- zPeekChan chan
-    zSwapChan chan $ zOrbitCamera theta root    
+    zSwapChan chan $ zOrbitCamera theta root
