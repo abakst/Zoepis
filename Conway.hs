@@ -4,12 +4,13 @@ import Zoepis
 import Data.Array
 import Control.Monad.State
 import Graphics.Rendering.OpenGL hiding (get)
+import Control.Concurrent
 import Unsafe.Coerce
---import Graphics.Rendering.OpenGL.GLU
 
 data Conway = ConwayState {
     stGraphics :: ZGraphicsGL ConwayScene
   , stSceneChannel :: ZChannel ConwayScene
+  , stScene    :: ConwayScene
   , stGameOver :: ZChannel Bool
   , stLastTick :: !Integer
   , stCells    :: ConwayGrid
@@ -87,8 +88,9 @@ main = do
                                                    ((-1,1), True)
                                                    ]
                        , stKeys = KV 0
+                       , stScene = startScene
                        }
-  zRunWithGraphics start gr $ zGameLoop gs conwayGame
+  start $ zGameLoop gs conwayGame
             
 conwayGame :: ZGameLoop Conway ()
 conwayGame = do
@@ -98,10 +100,13 @@ conwayGame = do
   moveCamera
   zEveryNTicks 1500 $ do
     s <- get
+    scene <- gets stScene
     let grid = stCells s
     let chan = stSceneChannel s
-    modify (\s -> s { stCells = stepConway grid })
-    lift $ zModifyScene s $ \r -> r {zSceneObjects = renderConway grid}
+    let scene' = scene { zSceneObjects = renderConway grid }
+    modify (\s -> s { stCells = stepConway grid, stScene = scene' })
+    lift $ zPutChan chan scene'
+  lift $ threadDelay 10
                                          
 endGame = gets stGameOver >>= (lift . flip zPutChan True)
 
@@ -113,21 +118,20 @@ keyDown c = case c of
               _ -> return ()
   
 keyUp :: ZHandlerFunc Char Conway
-keyUp c = case c of
-           'h' -> modify (\s -> s { stKeys = KV 0 })
-           'l' -> modify (\s -> s { stKeys = KV 0 })
-           _ -> return ()
+keyUp c = modify (\s -> s { stKeys = KV 0 })
   
 moveCamera :: ZGameLoop Conway ()
 moveCamera = do
   (KV k) <- gets stKeys
   case k of
-    1 -> orbitCamera 0.01 >> lift zUpdateGraphics
-    2 -> orbitCamera (-0.01) >> lift zUpdateGraphics
+    1 -> orbitCamera 0.1
+    2 -> orbitCamera (-0.1)
     _ -> return ()
     
 orbitCamera theta = do
+  scene <- gets stScene
   chan <- gets stSceneChannel
-  lift $ do
-    root <- zPeekChan chan
-    zSwapChan chan $ zOrbitCamera theta root
+  let scene' = zOrbitCamera theta scene
+  modify (\s -> s { stScene = scene' })
+  lift $ zPutChan chan $ scene'
+  return ()

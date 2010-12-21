@@ -28,7 +28,7 @@ zEmptyResourceList = GraphicsResources {
                      , gTextures = empty
                      }
                      
-zRunWithGraphics startGr gr act = do
+runWithGraphics startGr gr act = do
   forkIO $ do
     x <- zTakeChan (gEventChannel gr)
     zPutChan (gEventChannel gr) []
@@ -36,7 +36,7 @@ zRunWithGraphics startGr gr act = do
   startGr
 
 zUpdateGraphics :: IO ()
-zUpdateGraphics = postRedisplay Nothing  >> yield
+zUpdateGraphics = postRedisplay Nothing --
                   
 -- I'll add exception handling one day --
 zLoadObject :: Int -> String -> Bool -> ZResourceLoader
@@ -73,13 +73,9 @@ class GraphicsEnabled a b | a -> b where
   geGraphics :: a -> ZGraphicsGL b                      
     
 zModifyScene :: GraphicsEnabled a scene => a -> (scene -> scene) -> IO ()
-zModifyScene ge f = do
-  let chan = gSceneChannel . geGraphics $ ge
-  root <- zPeekChan chan
-  zSwapChan chan (f root)
-  zUpdateGraphics
-  
-  
+zModifyScene ge f = zModifyChan_ chan (return . f)
+  where chan = gSceneChannel . geGraphics $ ge
+        
 zInitialize :: ZRenderGL scene =>
                String ->
                GLsizei ->
@@ -87,32 +83,34 @@ zInitialize :: ZRenderGL scene =>
                ZResourceLoader ->
                scene ->
                ZChannel Bool -> 
-               IO (ZGraphicsGL scene, IO ())
+               IO (ZGraphicsGL scene, IO () -> IO ())
 zInitialize name width height loader startScene exit =
     do sceneVar <- zNewChan startScene
        eventVar <- zNewEmptyChan
-       return (GraphicsGL {
+       let initGL = startGL loader sceneVar eventVar exit
+       let graphics = GraphicsGL {
                     gProgname = name
                   , gWidth = width
                   , gHeight = height
                   , gSceneChannel = sceneVar
                   , gEventChannel = eventVar
-                  }, startGL loader sceneVar eventVar exit)
+                  }
+       return (graphics, runWithGraphics initGL graphics)
         where
           display res sceneChan = do
-            scene <- zPeekChan sceneChan
+            scene <- zTakeChan sceneChan
             clear [ ColorBuffer, DepthBuffer ]
             loadIdentity
             zRenderGL res scene
             flush
-            yield
+            postRedisplay Nothing
           startGL resloader sceneVar eventVar exitVar = do
             --- Basic init ---
             initialize name []
             initialDisplayMode $= [SingleBuffered, RGBMode, WithDepthBuffer]
             initialWindowSize $= Size width height
             createWindow name
---	    fullScreen
+	    fullScreen
             res <- execStateT resloader zEmptyResourceList
             displayCallback $= display res sceneVar
             idleCallback $= (Just $ do x <- zIsEmpty exitVar

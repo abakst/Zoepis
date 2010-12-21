@@ -2,7 +2,8 @@ How to build and run Zoepis
 ===========================
 
 Installation:
-For now, the only way to build this is to make sure that libglm, libpng, and libjpeg are installed on your system.
+For now, the only way to build this is to make sure that
+libglm, libpng, and libjpeg are installed on your system.
 
 First install libjpg and libpng. These can be found at:
 http://sourceforge.net/projects/libjpeg/
@@ -11,12 +12,19 @@ http://www.libpng.org/
 Then install libglm:
 http://devernay.free.fr/hacks/glm/
 
-Once these libraries are installed, run `make basic_test'. This will either compile all the haskell files successfully, or not ;). This will produce an executable, basic_test, which is all I have to show for myself right now.
+There are two test programs that are included: basic_test.hs, which
+includes some objects and keyboard/mouse camera control, and
+conway.hs, which is a basic implementation of Conway's game of life. To build either of these, run
 
-Running:
-All there is to run now is a file, basic_test.
+$ make <target>
 
-$ ./basic_test
+where <target> is either conway or basic_test. There is also a
+run_<target> Makefile target that can be used to build and then run an
+executable:
+
+$ make run_basic_test
+
+will build and then execute basic_test.
 
 You can include any of the modules defined in the Z*hs files and make your own project, however! That is fun.
 

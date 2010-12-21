@@ -1,3 +1,4 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
 module Main where
 
 import Zoepis
@@ -28,7 +29,22 @@ data GameState = GameState {
     , stObjects     :: [ExampleObject]
     , stSceneChannel :: ZChannel ZSceneRoot
     , stGameOver     :: ZChannel Bool
+    , stScene        :: ZSceneRoot
     }
+                 
+instance KeysEnabled GameState where
+  keKV = stPressedKeys
+  keSetKeys g kv = g { stPressedKeys = kv }
+  
+instance Timed GameState where  
+  tGetTicks = stLastTick
+  tUpdateTicks g t = g { stLastTick = t }
+  
+instance EventSub GameState where  
+  esEventChannel = gEventChannel . stGraphics
+  
+instance GraphicsEnabled GameState ZSceneRoot where  
+  geGraphics = stGraphics
 
 main = do
   time         <- zGetTime
@@ -42,51 +58,29 @@ main = do
                      , stSceneChannel = gSceneChannel gr
                      , stObjects = formation
                      , stGameOver = gameOver
+                     , stScene = startScene
                      }
-  zRunWithGraphics startGr gr (gameloop gs myGame)
-      where gameloop st lp = do
-              st' <- zGameLoopStep st lp
-              gameloop st' lp
+  startGr $ zGameLoop gs myGame
 
 myGame :: ZGameLoop GameState ()
 myGame = do
-  handleEvents
+  zHandleEvents $ zEmptyHandler { zKeyPress = keyPress
+                               , zKeyRelease = keyRelease
+                               , zMouseDown = mouseDown
+                               , zMouseMove = mouseMoved
+                               }
   moveCamera
-  everyNTicks 250 $ do
+  zEveryNTicks 100 $ do
            chan <- gets stSceneChannel
            objs <- gets stObjects
-           modify (\s -> s{stObjects = map (flip objUpdate 0.1) objs})
-           lift $ do
-             root <- zPeekChan chan
-             let scene = concatMap objScene objs
-             zSwapChan chan $ root {
-                             zSceneObjects = scene
-                           }
-           lift $ zUpdateGraphics
-            
-everyNTicks :: Integer -> ZGameLoop GameState a ->
-               ZGameLoop GameState ()
-everyNTicks n a = do
-  t0 <- gets stLastTick
-  t1 <- lift $ zGetTime
-  loop t1 (t1 - t0)
-  where loop t1 dif = if (dif > n)
-                      then a >> loop t1 (dif - n)
-                      else modify (\s -> s { stLastTick = t1 - dif })
-  
-handleEvents :: ZGameLoop GameState ()
-handleEvents = do
-  graphics <- gets stGraphics
-  let channel = gEventChannel graphics
-  zWithEventChannel channel ZEventHandler {
-                          zKeyPress = keyPress
-                        , zKeyRelease = keyRelease
-                        , zMouseDown = mouseDown
-                        , zMouseUp = zIgnoreEvent
-                        , zMouseMove = mouseMoved
-                        , zTic = zIgnoreEvent
-                        }  
+           root <- gets stScene
+           let root' = root { zSceneObjects = concatMap objScene objs }
+           modify (\s -> s{ stObjects = map (flip objUpdate 0.1) objs
+                          , stScene = root'
+                          })
+           lift $ zPutChan chan root'
 
+            
 mouseDown :: ZHandlerFunc (Button, (Int, Int)) GameState
 mouseDown (_, (x,y)) = modify (\s -> s { stLastMouse = (x,y) })
                                    
@@ -97,23 +91,22 @@ mouseMoved (x,y) = do
   let phi   = 0.01 * fromIntegral (oldy-y)
   modify (\s -> s { stLastMouse = (x,y) })
   rotateCamera theta phi
-  lift zUpdateGraphics
 
-endGame = gets stGameOver >>= (lift . flip zPutChan True)                    
+endGame = gets stGameOver >>= (lift . flip zPutChan True)
 
 keyPress c = case c of
                'q' -> endGame
                'r' -> modify (\s -> s { stObjects = formation })
                _ ->  do
-                      kv <- gets stPressedKeys
-                      let kv' =
-                              case c of 
-                                'a' -> (kv `zSetKey` zAKey) `zClearKey` zDKey
-                                's' -> (kv `zSetKey` zSKey) `zClearKey` zWKey
-                                'd' -> (kv `zSetKey` zDKey) `zClearKey` zAKey
-                                'w' -> (kv `zSetKey` zWKey) `zClearKey` zSKey
-                                _ -> kv
-                      modify (\s -> s { stPressedKeys = kv' })
+                 kv <- gets stPressedKeys
+                 let kv' =
+                       case c of 
+                         'a' -> (kv `zSetKey` zAKey) `zClearKey` zDKey
+                         's' -> (kv `zSetKey` zSKey) `zClearKey` zWKey
+                         'd' -> (kv `zSetKey` zDKey) `zClearKey` zAKey
+                         'w' -> (kv `zSetKey` zWKey) `zClearKey` zSKey
+                         _ -> kv
+                 modify (\s -> s { stPressedKeys = kv' })
 
 keyRelease c = do 
   kv <- gets stPressedKeys
@@ -129,20 +122,21 @@ moveCamera :: ZGameLoop GameState ()
 moveCamera = do
   kv@(KV pressed) <- gets stPressedKeys
   chan <- gets stSceneChannel
-  lift $ do
-    root <- zPeekChan chan
-    let scale = 0.002
-    let right = if zKeySet kv zDKey
-                then scale else if zKeySet kv zAKey
+  root <- gets stScene
+  let scale = 0.01
+  let right = if zKeySet kv zDKey
+              then scale else if zKeySet kv zAKey
+                              then -scale else 0
+  let forward = if zKeySet kv zWKey
+                then scale else if zKeySet kv zSKey
                                 then -scale else 0
-    let forward = if zKeySet kv zWKey
-                  then scale else if zKeySet kv zSKey
-                                  then -scale else 0
-    zSwapChan chan $ zMoveCamera right forward root
-    return ()
+  let root' = zMoveCamera right forward root
+  modify (\s -> s { stScene = root' } )
+  lift $ zPutChan chan root'
                                                 
 rotateCamera theta phi = do
+  root <- gets stScene
   chan <- gets stSceneChannel
-  lift $ do
-    root <- zPeekChan chan
-    zSwapChan chan $ zRotateCamera theta phi root
+  let root' = zRotateCamera theta phi root
+  lift $ zPutChan chan root'
+  modify (\s -> s { stScene = root' } )
