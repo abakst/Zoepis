@@ -10,7 +10,11 @@ endif
 
 DO=$(HC) $(HCFLAG) $(HLFLAG)
 
-.PHONY: conway
+.PHONY: zoepis
+
+zoepis: 
+	$(DO) Zoepis.hs
+
 conway:
 	$(DO) conway.hs -o conway
 

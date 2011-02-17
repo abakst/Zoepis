@@ -1,19 +1,19 @@
 {-# LANGUAGE MultiParamTypeClasses,FunctionalDependencies #-}
 module Zoepis.ZGraphics where
 
-
 import Zoepis.ZObject
 import Zoepis.ZChannel
 import Zoepis.ZEventMessage
 import Zoepis.Texture
 import Control.Concurrent (yield, forkOS, forkIO)
-import Graphics.Rendering.OpenGL hiding (get)
+import Graphics.Rendering.OpenGL as GL
 import Graphics.UI.GLUT hiding (get, LeftButton)
 import Data.Map
-import Control.Monad.State
+import Control.Monad.State as S
 import Data.IORef
 import Data.List (sortBy)
 import System.Exit
+import Data.Maybe
 
 --- Resources ---
 data ZGraphicsResources = GraphicsResources {
@@ -28,12 +28,7 @@ zEmptyResourceList = GraphicsResources {
                      , gTextures = empty
                      }
                      
-runWithGraphics startGr gr act = do
-  forkIO $ do
-    x <- zTakeChan (gEventChannel gr)
-    zPutChan (gEventChannel gr) []
-    act
-  startGr
+runWithGraphics startGr act = forkIO act >> startGr
 
 zUpdateGraphics :: IO ()
 zUpdateGraphics = postRedisplay Nothing --
@@ -41,7 +36,7 @@ zUpdateGraphics = postRedisplay Nothing --
 -- I'll add exception handling one day --
 zLoadObject :: Int -> String -> Bool -> ZResourceLoader
 zLoadObject id str unit = do
-  res <- get
+  res <- S.get
   obj <- lift $ zLoadObjectFile str unit
   let newres = insert id obj (gDisplayLists res)
   put $ res { gDisplayLists = newres }
@@ -63,79 +58,138 @@ instance ZRenderGL NullScene where
 --- Initialization/Setup ---                
 data ZGraphicsGL a = GraphicsGL {
       gProgname :: !String
-    , gWidth    :: !GLsizei
-    , gHeight   :: !GLsizei
-    , gSceneChannel :: !(ZChannel a)
-    , gEventChannel :: !(ZChannel [ZEvent])
+    , gWindows  :: ZWindowGL a
     }
                      
+data ZWindowGL a = ZWindowGL {
+      gWindowName :: String
+    , gWidth  :: !GLsizei
+    , gHeight :: !GLsizei
+    , gWindowOffset :: !(GLint, GLint)
+    , gSceneChannel :: !(ZChannel a)
+    , gEventChannel :: !(Maybe (ZChannel [ZEvent]))
+    , gSubWindows :: [ZWindowGL a]
+    , gResloader  :: ZResourceLoader
+    , gWindowChannel :: (ZChannel [ZWindowMessage])
+    }
+                   
+data ZWindowMessage = HideWindow
+                    | ShowWindow
+                    | PositionWindow (GLint, GLint)
+                    | SizeWindow (GLsizei, GLsizei)                   
+                      deriving Show
+
+handleWMsgs eventC = do
+  events <- zTakeChan eventC
+  zPutChan eventC []
+  when (length events > 0) $ do
+                       mapM_ applyWindowMsg events
+                       postRedisplay Nothing
+  
+applyWindowMsg HideWindow = windowStatus $= Hidden
+applyWindowMsg ShowWindow = windowStatus $= Shown
+applyWindowMsg (PositionWindow (x, y)) = windowPosition $= Position x y
+applyWindowMsg (SizeWindow (w, h)) = windowSize $= Size w h
+                   
 class GraphicsEnabled a b | a -> b where                     
   geGraphics :: a -> ZGraphicsGL b                      
     
-zModifyScene :: GraphicsEnabled a scene => a -> (scene -> scene) -> IO ()
-zModifyScene ge f = zModifyChan_ chan (return . f)
-  where chan = gSceneChannel . geGraphics $ ge
+zModifyScene chan f = zModifyChan_ chan (return . f)
         
+setupWindows :: ZRenderGL a => Maybe Window -> ZWindowGL a ->
+                IO [(Window, ZChannel [ZWindowMessage])]
+setupWindows parent w = do
+  let (wi, he) = (gWidth w, gHeight w)
+  let (x,y) = gWindowOffset w
+  let scene = gSceneChannel w
+  let event = gEventChannel w
+  let pos = Position x y
+  let size = Size wi he
+  wHandle <- (if isJust parent
+              then createSubWindow (fromJust parent) pos size
+              else createWindow (gWindowName w))
+  currentWindow $= Just wHandle
+  -- We need to load resources per-window --
+  res <- execStateT (gResloader w) zEmptyResourceList
+  -- Set up basic stuff --
+  displayCallback $= display wHandle w res scene
+  eventSetup wHandle (gWindowChannel w) event
+  basicSetup wi he
+  windowStatus $= Shown
+  eventChannels <- mapM (setupWindows (Just wHandle)) $ gSubWindows w
+  -- In case this changed, set the currentWindow again --
+  currentWindow $= Just wHandle
+  return (concat eventChannels ++ [(wHandle, gWindowChannel w)])
+
+display wptr wobj res sceneChan = do
+  scene <- zTakeChan sceneChan
+  clear [ ColorBuffer, DepthBuffer ]
+  loadIdentity
+  zRenderGL res scene
+  zPutChan sceneChan scene
+  flush
+  postRedisplay Nothing
+
+eventSetup wHandle msgC (Just events) = do
+  motionCallback $= Just (mouseCallback  events)
+  keyboardMouseCallback $= Just (\a b c d -> do
+                                   cw <- GL.get currentWindow
+                                   currentWindow $= Just wHandle
+                                   handleWMsgs msgC
+                                   currentWindow $= cw
+                                   buttonCallback events a b c d)
+eventSetup _ _ _ = return ()    
+
+idle events = do
+  cw <- GL.get currentWindow
+  mapM_ getMsgs events
+  currentWindow $= cw
+    where getMsgs (handle, channel) = do
+                currentWindow $= Just handle
+                handleWMsgs channel
+  
 zInitialize :: ZRenderGL scene =>
                String ->
-               GLsizei ->
-               GLsizei ->
-               ZResourceLoader ->
-               scene ->
+               ZWindowGL scene -> 
                ZChannel Bool -> 
-               IO (ZGraphicsGL scene, IO () -> IO ())
-zInitialize name width height loader startScene exit =
-    do sceneVar <- zNewChan startScene
-       eventVar <- zNewEmptyChan
-       let initGL = startGL loader sceneVar eventVar exit
-       let graphics = GraphicsGL {
-                    gProgname = name
-                  , gWidth = width
-                  , gHeight = height
-                  , gSceneChannel = sceneVar
-                  , gEventChannel = eventVar
-                  }
-       return (graphics, runWithGraphics initGL graphics)
+               IO (IO () -> IO ())
+zInitialize name windows exit = do
+  let initGL = startGL windows exit
+  return $ runWithGraphics initGL
         where
-          display res sceneChan = do
-            scene <- zTakeChan sceneChan
-            clear [ ColorBuffer, DepthBuffer ]
-            loadIdentity
-            zRenderGL res scene
-            flush
-            postRedisplay Nothing
-          startGL resloader sceneVar eventVar exitVar = do
+          startGL windows exitVar = do
             --- Basic init ---
             initialize name []
             initialDisplayMode $= [SingleBuffered, RGBMode, WithDepthBuffer]
+            let (width, height) = (gWidth windows, gHeight windows)
             initialWindowSize $= Size width height
-            createWindow name
-	    fullScreen
-            res <- execStateT resloader zEmptyResourceList
-            displayCallback $= display res sceneVar
-            idleCallback $= (Just $ do x <- zIsEmpty exitVar
-                                       unless x exitSuccess
-                                       yield)
-            motionCallback  $= Just (mouseCallback eventVar)
-            keyboardMouseCallback $= Just (buttonCallback eventVar)
-            --- Other stuff now ---
-            matrixMode $= Projection
-            loadIdentity
-            perspective 45 
-                        (fromIntegral width / fromIntegral height)
-                        0.1
-                        200
-            matrixMode $= Modelview 0
-            depthFunc $= Just Less
-            hint PointSmooth $= Nicest
-            shadeModel $= Smooth
-            cullFace $= Nothing
-            clearColor $= Color4 0.1 0.1 0.1 0.0
-            clearDepth $= 1.0
-            normalize $= Enabled
-            setupLights
-	    zPutChan eventVar []
+            -- Stuff --
+            events <- setupWindows Nothing windows
+            idleCallback $= (Just $ do quit <- zTryTakeChan exitVar
+                                       when (isJust quit) $ do
+                                         exitWith ExitSuccess
+                                       idle events
+                                       return ())
+            basicSetup width height
+            fullScreen
             mainLoop
+            
+basicSetup width height = do            
+  matrixMode $= Projection
+  loadIdentity
+  perspective 45 
+             (fromIntegral width / fromIntegral height)
+             0.01
+             500
+  matrixMode $= Modelview 0
+  depthFunc $= Just Less
+  hint PointSmooth $= Nicest
+  shadeModel $= Smooth
+  cullFace $= Nothing
+  clearColor $= Color4 0.1 0.1 0.1 0.0
+  clearDepth $= 1.0
+  normalize $= Enabled
+  setupLights
 
 setupLights = do 
   lighting              $= Enabled
@@ -145,8 +199,7 @@ setupLights = do
   lightModelLocalViewer $= Enabled
   position (Light 0)    $= Vertex4 1 2 1 (1::GLfloat)
   position (Light 1)    $= Vertex4 (-1.0) 2 (-1.0) (1::GLfloat)
-           
-
+          
 sendEvent :: ZEvent -> ZChannel [ZEvent] -> IO ()  
 sendEvent e chan = zModifyChan_ chan (\es -> return (e:es))  >> yield
 
@@ -178,5 +231,5 @@ drawAxes = do
      renderPrimitive Lines $ do
                 vertex (Vertex3 0.0 0.0 0.0::Vertex3 GLfloat)
                 vertex (Vertex3 0.0 0.0 1.0::Vertex3 GLfloat)
-     shadeModel $= Flat
+     shadeModel $= Smooth
      lighting $= Enabled

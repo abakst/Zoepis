@@ -53,8 +53,9 @@ zWithEventChannel :: ZChannel [ZEvent] -> ZEventHandler st -> ZGameLoop st ()
 zWithEventChannel events hs =
     do maybeEs <- lift $ zTryTakeChan events
        case maybeEs of
-         (Just es) -> do lift $ zPutChan events []
-                         mapM_ applyHandlers es
+         (Just es) -> do 
+                      lift $ zPutChan events []
+                      mapM_ applyHandlers es
          _ -> return ()
     where
       applyHandlers (KeyPress x) = zKeyPress hs x

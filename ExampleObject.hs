@@ -87,8 +87,8 @@ newShip pos rot speed seed = mkShip $ Ship {
           eOff = scale 0.02 (oUp shipO)
           eRight = scale 0.35 (oRight shipO)
           eBack  = scale (-0.80) (oForward shipO)
-          eL = (newEngine 15, offsetO (eOff - eRight + eBack) shipO)
-          eR = (newEngine 15, offsetO (eOff + eRight + eBack) shipO)
+          eL = (newEngine 25, offsetO (eOff - eRight + eBack) shipO)
+          eR = (newEngine 25, offsetO (eOff + eRight + eBack) shipO)
            
 mkShip :: Ship -> ExampleObject           
 mkShip s = Object update render
@@ -111,7 +111,7 @@ stepEngines ship = ship { sEngineL = stepEngine $ sEngineL ship
           justUpdate ZDeadParticle = ZDeadParticle
           justUpdate p = if pLife p < 0
                          then ZDeadParticle
-                         else p { pLife = pLife p - 0.1 }
+                         else p { pLife = pLife p - 0.06 }
           
 newEngine n = replicate n $ ZDeadParticle          
           
@@ -134,7 +134,8 @@ renderShip :: Ship -> [ZSceneObject]
 renderShip s = 
   [ZModel zNoScale (zRot $ rotate `mulq` reOrient) (zTrans pos) 0
   ,ZParticles 50 0 peR
-  ,ZParticles 50 0 peL]
+  ,ZParticles 50 0 peL
+  ]
     where up = oUp $ sOrient s
           pos = oPos $ sOrient s
           peL = fst . sEngineL $ s

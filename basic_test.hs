@@ -13,6 +13,7 @@ import System.CPUTime
 cameraStart = (origin, zAxis, yAxis)
 resources  = shipR >> zLoadObject 1 "resources/skybox/cube.obj" True
 startScene = ZSceneRoot (Just (ZSkybox 1)) cameraStart [ZEmptyScene]
+--startScene = ZSceneRoot Nothing cameraStart [ZEmptyScene]
 left = vector3D (-2.0, 0.0, -1.0)
 right = vector3D (2.0, 0.0, -1.0)
 formation = [newShip origin noRotation 0.3 1
@@ -21,15 +22,16 @@ formation = [newShip origin noRotation 0.3 1
             ]
              
 data GameState = GameState {
-      stGraphics    :: ZGraphicsGL ZSceneRoot
-    , stLastMouse   :: !(Int, Int)
-    , stMouseV      :: !(Int, Int)
-    , stPressedKeys :: !KeyVector
-    , stLastTick    :: !Integer
-    , stObjects     :: [ExampleObject]
+      stLastMouse    :: !(Int, Int)
+    , stMouseV       :: !(Int, Int)
+    , stPressedKeys  :: !KeyVector
+    , stLastTick     :: !Integer
+    , stObjects      :: [ExampleObject]
     , stSceneChannel :: ZChannel ZSceneRoot
+    , stEventChannel :: ZChannel [ZEvent]
     , stGameOver     :: ZChannel Bool
     , stScene        :: ZSceneRoot
+    , stSubWindowMsg :: ZChannel [ZWindowMessage]
     }
                  
 instance KeysEnabled GameState where
@@ -41,34 +43,58 @@ instance Timed GameState where
   tUpdateTicks g t = g { stLastTick = t }
   
 instance EventSub GameState where  
-  esEventChannel = gEventChannel . stGraphics
-  
-instance GraphicsEnabled GameState ZSceneRoot where  
-  geGraphics = stGraphics
+  esEventChannel = stEventChannel
 
 main = do
   time         <- zGetTime
   gameOver     <- zNewEmptyChan
-  (gr,startGr) <- zInitialize "Test" 800 600  resources startScene gameOver
-  let gs = GameState { stGraphics = gr
-                     , stLastMouse = (0,0)
+  event        <- zNewChan []
+  scene        <- zNewChan startScene
+  subWindowC   <- zNewChan []
+  mainWindowC  <- zNewChan []
+  let subWindow = ZWindowGL {
+                    gWindowName = "Sub"
+                  , gWidth = 500
+                  , gHeight = 400
+                  , gWindowOffset = (0,0)
+                  , gSceneChannel = scene
+                  , gEventChannel = Nothing
+                  , gSubWindows = []
+                  , gResloader = resources
+                  , gWindowChannel = subWindowC
+                  }
+  let window = ZWindowGL {
+                 gWindowName = "Main"
+               , gWidth = 1024
+               , gHeight = 768
+               , gWindowOffset = (0,0)
+               , gSceneChannel = scene
+               , gEventChannel = Just event
+               , gSubWindows = [subWindow]
+               , gResloader = resources
+               , gWindowChannel = mainWindowC
+               }
+  startGr <- zInitialize "Test" window gameOver
+  let gs = GameState { stLastMouse = (0,0)
                      , stPressedKeys = KV 0
                      , stMouseV = (0,0)
                      , stLastTick = time
-                     , stSceneChannel = gSceneChannel gr
+                     , stSceneChannel = scene
+                     , stEventChannel = event
                      , stObjects = formation
                      , stGameOver = gameOver
                      , stScene = startScene
+                     , stSubWindowMsg = subWindowC
                      }
   startGr $ zGameLoop gs myGame
 
 myGame :: ZGameLoop GameState ()
 myGame = do
   zHandleEvents $ zEmptyHandler { zKeyPress = keyPress
-                               , zKeyRelease = keyRelease
-                               , zMouseDown = mouseDown
-                               , zMouseMove = mouseMoved
-                               }
+                                , zKeyRelease = keyRelease
+                                , zMouseDown = mouseDown
+                                , zMouseMove = mouseMoved
+                                }
   moveCamera
   zEveryNTicks 100 $ do
            chan <- gets stSceneChannel
@@ -78,14 +104,12 @@ myGame = do
            modify (\s -> s{ stObjects = map (flip objUpdate 0.1) objs
                           , stScene = root'
                           })
-           lift $ zPutChan chan root'
-
+           lift $ zSwapChan chan root'
             
 mouseDown :: ZHandlerFunc (Button, (Int, Int)) GameState
 mouseDown (_, (x,y)) = modify (\s -> s { stLastMouse = (x,y) })
                                    
 mouseMoved (x,y) = do
-  gr   <- gets stGraphics
   (oldx, oldy) <- gets stLastMouse
   let theta = 0.01 * fromIntegral (oldx-x)
   let phi   = 0.01 * fromIntegral (oldy-y)
@@ -97,6 +121,8 @@ endGame = gets stGameOver >>= (lift . flip zPutChan True)
 keyPress c = case c of
                'q' -> endGame
                'r' -> modify (\s -> s { stObjects = formation })
+               'h' -> gets stSubWindowMsg >>= lift . sendWindow HideWindow
+               'y' -> gets stSubWindowMsg >>= lift . sendWindow ShowWindow
                _ ->  do
                  kv <- gets stPressedKeys
                  let kv' =
@@ -107,6 +133,7 @@ keyPress c = case c of
                          'w' -> (kv `zSetKey` zWKey) `zClearKey` zSKey
                          _ -> kv
                  modify (\s -> s { stPressedKeys = kv' })
+    where sendWindow msg chan = zModifyChan_ chan (\m -> return (m++[msg]))
 
 keyRelease c = do 
   kv <- gets stPressedKeys
@@ -132,11 +159,12 @@ moveCamera = do
                                 then -scale else 0
   let root' = zMoveCamera right forward root
   modify (\s -> s { stScene = root' } )
-  lift $ zPutChan chan root'
+  lift $ zSwapChan chan root'
+  return ()
                                                 
 rotateCamera theta phi = do
   root <- gets stScene
   chan <- gets stSceneChannel
   let root' = zRotateCamera theta phi root
-  lift $ zPutChan chan root'
+  lift $ zSwapChan chan root'
   modify (\s -> s { stScene = root' } )

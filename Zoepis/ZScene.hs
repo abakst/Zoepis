@@ -47,7 +47,7 @@ zNoTrans = ZTranslate $ vector3D (0,0,0)
 zTrans   = ZTranslate
 
 instance ZRenderGL ZSceneRoot where
-    zRenderGL res (ZSceneRoot sb (pt,at,up) os) = do
+    zRenderGL res (ZSceneRoot sb (pt,at,up) os) =  preservingMatrix $ do
       lookAt (fromVec3D pt) (fromVec3D at) (fromVec3D up)
       when (isJust sb) $ preservingMatrix $ do
         let (Just (ZSkybox objid)) = sb
@@ -60,7 +60,6 @@ instance ZRenderGL ZSceneRoot where
         callList dlist
         depthMask $= Enabled
       mapM_ (zRenderGL res) (arrangeOs os)
-      
 
 instance ZRenderGL ZSceneObject where
   zRenderGL _ ZEmptyScene  = return ()

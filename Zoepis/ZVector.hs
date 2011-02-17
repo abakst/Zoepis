@@ -4,7 +4,7 @@ import Data.SG hiding (origin)
 import Control.Applicative
 import Debug.Trace
 import Unsafe.Coerce
-import Graphics.Rendering.OpenGL
+import Graphics.Rendering.OpenGL hiding (scale)
 
 debug x = trace (show x) x
 
@@ -147,6 +147,16 @@ zCross = cross
 
 zMagSq :: Floating a => Vector3D a -> a
 zMagSq = magSq
+
+zRotateVia :: (Ord a, Floating a) =>
+              Vector3D a -> Vector3D a -> Vector3D a -> Quaternion a
+zRotateVia to a1n a2n = 
+  let project pt norm = unit (pt - (scale (norm `zDot` pt) norm))
+      ap    = a1n `cross` a2n      
+      theta = acos $ ap `zDot` project to a1n
+      a2nr  = rotateVector (rotation theta a1n) a2n
+      phi   = acos $ a1n `zDot` project to a2nr
+  in rotation phi a2nr `mulq` rotation theta a1n
 
 class IsoVecTo a where    
     fromVec3D :: Vector3D f -> a f
